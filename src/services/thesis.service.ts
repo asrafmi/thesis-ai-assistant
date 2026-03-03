@@ -1,7 +1,6 @@
 // BUSINESS LOGIC LAYER — pure TypeScript functions. No React, no Next.js.
 
-import type { Thesis } from '@/types/thesis.types'
-import type { TemplateType } from '@/types/database.types'
+import type { Thesis, TemplateType } from '@/types/thesis.types'
 
 export function buildDefaultSections(thesisId: string) {
   // Returns default section tree for a new thesis (Bab I–V)

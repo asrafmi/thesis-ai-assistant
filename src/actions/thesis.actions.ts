@@ -3,7 +3,7 @@
 // SERVER ACTIONS — Supabase calls only. No React hooks, no JSX.
 
 import { createClient } from '@/lib/supabase/server'
-import type { TemplateType } from '@/types/database.types'
+import type { TemplateType } from '@/types/thesis.types'
 
 export async function createThesisAction(data: {
   title: string
