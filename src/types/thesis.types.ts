@@ -1,4 +1,9 @@
-import type { TemplateType, ThesisStatus, Plan } from './database.types'
+import type { Enums } from './database.types'
+
+export type Plan = Enums<'plan'>
+export type TemplateType = Enums<'template_type'>
+export type ThesisStatus = Enums<'thesis_status'>
+export type RevisionSource = Enums<'revision_source'>
 
 export interface Profile {
   id: string

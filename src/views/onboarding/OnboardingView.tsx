@@ -1,6 +1,6 @@
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
-import type { TemplateType } from '@/types/database.types'
+import type { TemplateType } from '@/types/thesis.types'
 
 interface OnboardingFormData {
   title: string

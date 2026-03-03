@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkripsiAI
+
+AI Writing & Formatting Workspace untuk Skripsi Indonesia.
 
 ## Getting Started
 
-First, run the development server:
+Copy environment variables dan isi dengan credentials Supabase:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Jalankan development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Buka [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Database Migrations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Migrations dikelola menggunakan Supabase CLI. File migration ada di `supabase/migrations/`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Menjalankan migration ke Supabase
 
-## Deploy on Vercel
+Setelah pull kode terbaru, push semua migration yang belum diapply:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm db:push
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Setelah push, sync TypeScript types agar sesuai dengan schema terbaru:
+
+```bash
+pnpm db:types
+```
+
+### Membuat migration file baru
+
+Saat ada perubahan schema (tambah kolom, tabel baru, dll.), buat file migration baru:
+
+```bash
+pnpm db:new nama_migration
+```
+
+Contoh:
+
+```bash
+pnpm db:new add_email_to_profiles
+```
+
+Perintah ini membuat file baru di `supabase/migrations/<timestamp>_nama_migration.sql`. Edit file tersebut dengan SQL yang diinginkan, lalu jalankan:
+
+```bash
+pnpm db:push    # apply ke Supabase
+pnpm db:types   # sync TypeScript types
+```
+
+### Aturan penting
+
+- **Jangan edit `src/types/database.types.ts` secara manual** — file ini di-generate otomatis oleh `pnpm db:types`.
+- Semua type domain (`Plan`, `TemplateType`, dll.) di-re-export dari `src/types/thesis.types.ts`.
+- Setiap perubahan schema harus lewat migration file baru, bukan edit migration yang sudah ada.
+
+---
+
+## Scripts
+
+| Script | Keterangan |
+|--------|-----------|
+| `pnpm dev` | Jalankan development server |
+| `pnpm build` | Build production |
+| `pnpm db:new <nama>` | Buat migration file baru |
+| `pnpm db:push` | Push migrations ke Supabase |
+| `pnpm db:types` | Sync TypeScript types dari Supabase |

@@ -1,8 +1,7 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
 import { useState, useEffect } from 'react'
-import type { Thesis } from '@/types/thesis.types'
-import type { TemplateType } from '@/types/database.types'
+import type { Thesis, TemplateType } from '@/types/thesis.types'
 
 export function useThesis() {
   const [thesis, setThesis] = useState<Thesis | null>(null)
