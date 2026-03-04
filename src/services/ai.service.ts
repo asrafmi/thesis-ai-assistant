@@ -1,16 +1,24 @@
 // BUSINESS LOGIC LAYER — pure TypeScript functions. No React, no Next.js.
 
+import type { Reference } from '@/types/thesis.types'
+import { buildReferencesContext } from './reference.service'
+
 export function buildThesisPrompt(params: {
   prompt: string
   sectionTitle: string
   thesisTitle: string
   existingContent?: string
+  references?: Reference[]
 }): string {
+  const refContext = params.references && params.references.length > 0
+    ? `\n\n${buildReferencesContext(params.references)}`
+    : ''
+
   return `Kamu adalah asisten penulisan skripsi akademik Indonesia.
 
 Skripsi: "${params.thesisTitle}"
 Bagian: "${params.sectionTitle}"
-${params.existingContent ? `\nKonten saat ini:\n${params.existingContent}` : ''}
+${params.existingContent ? `\nKonten saat ini:\n${params.existingContent}` : ''}${refContext}
 
 Instruksi dari mahasiswa: ${params.prompt}
 

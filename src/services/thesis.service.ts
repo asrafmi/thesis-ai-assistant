@@ -62,6 +62,12 @@ export function buildDefaultSections(): DefaultSectionNode[] {
         { title: '5.2 Saran', level: 2, order_index: 1, children: [] },
       ],
     },
+    {
+      title: 'DAFTAR PUSTAKA',
+      level: 1,
+      order_index: 5,
+      children: [],
+    },
   ]
 }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { generateSectionContentAction } from '@/actions/ai.actions'
+import type { Reference } from '@/types/thesis.types'
 
 export function useAI() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -12,6 +13,7 @@ export function useAI() {
     sectionTitle: string
     thesisTitle: string
     existingContent?: string
+    references?: Reference[]
   }): Promise<string | null> {
     setIsGenerating(true)
     setError(null)

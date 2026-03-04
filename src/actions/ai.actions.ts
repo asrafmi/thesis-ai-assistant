@@ -4,6 +4,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { buildThesisPrompt } from '@/services/ai.service'
+import type { Reference } from '@/types/thesis.types'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -14,6 +15,7 @@ export async function generateSectionContentAction(params: {
   sectionTitle: string
   thesisTitle: string
   existingContent?: string
+  references?: Reference[]
 }): Promise<{ data?: string; error?: string }> {
   try {
     const systemPrompt = buildThesisPrompt(params)

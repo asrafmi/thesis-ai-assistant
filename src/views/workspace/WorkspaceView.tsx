@@ -1,7 +1,7 @@
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
 import { BookOpen, Sparkles, Save, Download, Loader2 } from 'lucide-react'
-import type { SectionTree, Thesis } from '@/types/thesis.types'
+import type { SectionTree, Thesis, Reference } from '@/types/thesis.types'
 import { SidebarView } from './SidebarView'
 import { PromptPanelView } from './PromptPanelView'
 import { EditorView } from './EditorView'
@@ -16,12 +16,18 @@ interface WorkspaceViewProps {
   isGenerating: boolean
   isExporting: boolean
   isLoading: boolean
+  references: Reference[]
+  isSearching: boolean
+  isSearchEnabled: boolean
+  searchError: string | null
   onSelectSection: (id: string) => void
   onToggleSidebar: () => void
   onTogglePromptPanel: () => void
   onGenerate: (prompt: string) => void
   onContentChange: (sectionId: string, content: Record<string, unknown>) => void
   onExport: () => void
+  onToggleSearch: () => void
+  onDeleteReference: (refId: string) => void
 }
 
 export function WorkspaceView({
@@ -34,12 +40,18 @@ export function WorkspaceView({
   isGenerating,
   isExporting,
   isLoading,
+  references,
+  isSearching,
+  isSearchEnabled,
+  searchError,
   onSelectSection,
   onToggleSidebar,
   onTogglePromptPanel,
   onGenerate,
   onContentChange,
   onExport,
+  onToggleSearch,
+  onDeleteReference,
 }: WorkspaceViewProps) {
   return (
     <div className="flex h-screen flex-col bg-zinc-950">
@@ -113,8 +125,14 @@ export function WorkspaceView({
               activeSectionId={activeSectionId}
               promptHistory={promptHistory}
               isGenerating={isGenerating}
+              references={references}
+              isSearching={isSearching}
+              isSearchEnabled={isSearchEnabled}
+              searchError={searchError}
               onGenerate={onGenerate}
               onToggle={onTogglePromptPanel}
+              onToggleSearch={onToggleSearch}
+              onDeleteReference={onDeleteReference}
             />
           )}
           <EditorView

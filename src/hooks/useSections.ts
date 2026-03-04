@@ -27,5 +27,11 @@ export function useSections(thesisId?: string) {
     }, 2000)
   }
 
-  return { sections, isLoading, updateSectionContent }
+  async function refetch() {
+    if (!thesisId) return
+    const result = await getSectionsAction(thesisId)
+    if (result.data) setSections(result.data)
+  }
+
+  return { sections, isLoading, updateSectionContent, refetch }
 }
