@@ -155,6 +155,7 @@ export function WorkspaceView({
             activeSectionId={activeSectionId}
             isGenerating={isGenerating}
             onContentChange={onContentChange}
+            onSelectSection={onSelectSection}
           />
         </div>
       )}
