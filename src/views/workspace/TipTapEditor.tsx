@@ -17,6 +17,7 @@ export function TipTapEditor({ content, isActive, onChange }: TipTapEditorProps)
     extensions: [StarterKit],
     content: content ?? EMPTY_DOC,
     editable: isActive,
+    immediatelyRender: false,
     onUpdate({ editor }) {
       onChange(editor.getJSON() as Record<string, unknown>)
     },

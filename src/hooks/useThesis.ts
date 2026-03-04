@@ -1,10 +1,12 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { getThesisAction, createThesisAction } from '@/actions/thesis.actions'
 import type { Thesis, TemplateType } from '@/types/thesis.types'
 
 export function useThesis() {
+  const router = useRouter()
   const [thesis, setThesis] = useState<Thesis | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,8 +29,12 @@ export function useThesis() {
   }) {
     setIsLoading(true)
     const result = await createThesisAction(data)
-    if (result.error) setError(result.error)
-    else setThesis(result.data ?? null)
+    if (result.error) {
+      setError(result.error)
+    } else {
+      setThesis(result.data ?? null)
+      router.push('/workspace')
+    }
     setIsLoading(false)
   }
 

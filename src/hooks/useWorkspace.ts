@@ -1,6 +1,7 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useWorkspaceStore } from '@/store/workspace.store'
 import { textToTipTapContent } from '@/services/ai.service'
 import type { SectionTree } from '@/types/thesis.types'
@@ -18,9 +19,14 @@ function findSectionById(sections: SectionTree[], id: string): SectionTree | nul
 }
 
 export function useWorkspace() {
+  const router = useRouter()
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
+
+  useEffect(() => {
+    if (!thesisLoading && thesis === null) router.push('/onboarding')
+  }, [thesisLoading, thesis, router])
   const {
     activeSectionId,
     isSidebarOpen,
