@@ -14,9 +14,9 @@ interface EditorViewProps {
 }
 
 const HEADING_STYLES: Record<number, string> = {
-  1: 'text-xl font-bold text-zinc-100 mt-10 mb-2',
-  2: 'text-base font-semibold text-zinc-200 mt-6 mb-1',
-  3: 'text-sm font-medium text-zinc-300 mt-4 mb-1',
+  1: 'text-xl font-bold text-foreground mt-10 mb-2',
+  2: 'text-base font-semibold text-foreground/90 mt-6 mb-1',
+  3: 'text-sm font-medium text-foreground/80 mt-4 mb-1',
 }
 
 const SKELETON_LINES = [100, 92, 97, 85, 94, 78, 88, 60]
@@ -30,17 +30,17 @@ function TypingSkeleton() {
       {SKELETON_LINES.map((width, i) => (
         <div
           key={i}
-          className="h-3 rounded-sm bg-zinc-800 animate-pulse"
+          className="h-3 rounded-sm bg-muted animate-pulse"
           style={{ width: `${width}%`, animationDelay: `${i * 120}ms` }}
         />
       ))}
       <div className="flex items-center gap-1">
         <div
-          className="h-3 rounded-sm bg-zinc-800 animate-pulse"
+          className="h-3 rounded-sm bg-muted animate-pulse"
           style={{ width: '38%', animationDelay: `${SKELETON_LINES.length * 120}ms` }}
         />
         <span
-          className="inline-block h-3.5 w-0.5 rounded-sm bg-zinc-400 animate-pulse"
+          className="inline-block h-3.5 w-0.5 rounded-sm bg-muted-foreground animate-pulse"
           style={{ animationDuration: '0.8s' }}
         />
       </div>
@@ -65,9 +65,9 @@ function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
   return (
     <div id="section-daftar-isi" className="mb-2">
       <h2 className={HEADING_STYLES[1]}>DAFTAR ISI</h2>
-      <div className="rounded-md px-3 py-3 bg-zinc-900/60">
+      <div className="rounded-md px-3 py-3 bg-card/60">
         {entries.length === 0 ? (
-          <p className="text-xs text-zinc-600 italic">Belum ada bagian.</p>
+          <p className="text-xs text-muted-foreground/60 italic">Belum ada bagian.</p>
         ) : (
           <div className="flex flex-col gap-1">
             {entries.map(({ section, depth }) => (
@@ -77,10 +77,10 @@ function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
                 className="flex items-baseline gap-1 text-left group w-full"
                 style={{ paddingLeft: `${depth * 18}px` }}
               >
-                <span className={`text-sm group-hover:text-blue-400 transition-colors shrink-0 ${depth === 0 ? 'text-zinc-200 font-semibold' : 'text-zinc-400'}`}>
+                <span className={`text-sm group-hover:text-blue-400 transition-colors shrink-0 ${depth === 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                   {section.title}
                 </span>
-                <span className="flex-1 border-b border-dotted border-zinc-700 mb-0.75 min-w-2" />
+                <span className="flex-1 border-b border-dotted border-border mb-0.75 min-w-2" />
               </button>
             ))}
           </div>
@@ -110,7 +110,7 @@ function SectionBlock({
       <h2 className={headingClass}>{section.title}</h2>
       <div
         className={`rounded-md px-3 py-2 transition-colors ${
-          isActive ? 'ring-1 ring-blue-600/40 bg-zinc-900/60' : 'bg-transparent'
+          isActive ? 'ring-1 ring-blue-600/40 bg-card/60' : 'bg-transparent'
         }`}
       >
         {isWriting ? (
@@ -145,14 +145,14 @@ export function EditorView({ sections, activeSectionId, isGenerating, onContentC
 
   if (sections.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
+      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
         Skripsi belum memiliki bagian.
       </div>
     )
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-zinc-950">
+    <div className="flex-1 overflow-auto bg-background">
       <div className="max-w-3xl mx-auto px-12 py-10 pb-32">
         <DaftarIsiSection sections={sections} />
         {sections.map((section) => (

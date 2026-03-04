@@ -46,8 +46,8 @@ function ToolbarButton({
       title={title}
       className={`px-1.5 py-0.5 rounded text-xs transition-colors ${
         isActive
-          ? 'bg-zinc-700 text-zinc-100'
-          : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+          ? 'bg-muted text-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
       }`}
     >
       {children}
@@ -65,7 +65,7 @@ function Toolbar({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <div className="flex items-center gap-0.5 mb-1.5 pb-1.5 border-b border-zinc-800/60">
+    <div className="flex items-center gap-0.5 mb-1.5 pb-1.5 border-b border-border/60">
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
@@ -87,7 +87,7 @@ function Toolbar({
       >
         <span className="line-through">S</span>
       </ToolbarButton>
-      <span className="w-px h-3 bg-zinc-700 mx-1" />
+      <span className="w-px h-3 bg-border mx-1" />
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive('bulletList')}
@@ -102,7 +102,7 @@ function Toolbar({
       >
         1.
       </ToolbarButton>
-      <span className="w-px h-3 bg-zinc-700 mx-1" />
+      <span className="w-px h-3 bg-border mx-1" />
       <ToolbarButton
         onClick={() => fileInputRef.current?.click()}
         isActive={false}
@@ -148,7 +148,7 @@ export function TipTapEditor({ content, isActive, onChange }: TipTapEditorProps)
     },
     editorProps: {
       attributes: {
-        class: 'outline-none min-h-[60px] text-sm leading-relaxed text-zinc-200',
+        class: 'outline-none min-h-[60px] text-sm leading-relaxed text-foreground',
       },
       handlePaste(view, event) {
         const items = Array.from(event.clipboardData?.items ?? [])
