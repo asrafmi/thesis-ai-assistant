@@ -1,11 +1,36 @@
 'use server'
 
-// SERVER ACTIONS — export processing only. No React hooks, no JSX.
+// SERVER ACTIONS — Supabase + docx. No React hooks, no JSX.
 
-import { createClient } from '@/lib/supabase/server'
-import { buildDocxStructure } from '@/services/export.service'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
+import { buildSectionTree } from '@/services/section.service'
+import { buildDocxFromThesis } from '@/services/docx.service'
+import type { Section } from '@/types/thesis.types'
 
-export async function exportThesisAction(thesisId: string) {
+export async function exportThesisDocxAction(): Promise<{ data?: string; error?: string }> {
   const supabase = await createClient()
-  // TODO: implement docx generation and upload to Supabase Storage
+  const auth = await getAuthUser(supabase)
+  if ('error' in auth) return auth
+
+  const { data: thesis, error: thesisError } = await supabase
+    .from('theses')
+    .select('*')
+    .eq('user_id', auth.userId)
+    .maybeSingle()
+
+  if (thesisError) return { error: thesisError.message }
+  if (!thesis) return { error: 'Thesis tidak ditemukan' }
+
+  const { data: sections, error: sectionsError } = await supabase
+    .from('sections')
+    .select('*')
+    .eq('thesis_id', thesis.id)
+    .order('order_index')
+
+  if (sectionsError) return { error: sectionsError.message }
+
+  const tree = buildSectionTree(sections as unknown as Section[])
+  const base64 = await buildDocxFromThesis(thesis, tree)
+
+  return { data: base64 }
 }

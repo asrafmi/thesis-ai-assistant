@@ -1,6 +1,6 @@
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
-import { BookOpen, Sparkles, Save } from 'lucide-react'
+import { BookOpen, Sparkles, Save, Download, Loader2 } from 'lucide-react'
 import type { SectionTree, Thesis } from '@/types/thesis.types'
 import { SidebarView } from './SidebarView'
 import { PromptPanelView } from './PromptPanelView'
@@ -14,12 +14,14 @@ interface WorkspaceViewProps {
   isPromptPanelOpen: boolean
   promptHistory: string[]
   isGenerating: boolean
+  isExporting: boolean
   isLoading: boolean
   onSelectSection: (id: string) => void
   onToggleSidebar: () => void
   onTogglePromptPanel: () => void
   onGenerate: (prompt: string) => void
   onContentChange: (sectionId: string, content: Record<string, unknown>) => void
+  onExport: () => void
 }
 
 export function WorkspaceView({
@@ -30,12 +32,14 @@ export function WorkspaceView({
   isPromptPanelOpen,
   promptHistory,
   isGenerating,
+  isExporting,
   isLoading,
   onSelectSection,
   onToggleSidebar,
   onTogglePromptPanel,
   onGenerate,
   onContentChange,
+  onExport,
 }: WorkspaceViewProps) {
   return (
     <div className="flex h-screen flex-col bg-zinc-950">
@@ -66,7 +70,7 @@ export function WorkspaceView({
           {thesis?.title ?? 'Workspace'}
         </span>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isGenerating && (
             <span className="text-xs text-blue-400 animate-pulse">Generating...</span>
           )}
@@ -74,6 +78,18 @@ export function WorkspaceView({
             <Save size={11} />
             <span>Autosave</span>
           </div>
+          <button
+            onClick={onExport}
+            disabled={isExporting || isLoading}
+            className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {isExporting ? (
+              <Loader2 size={11} className="animate-spin" />
+            ) : (
+              <Download size={11} />
+            )}
+            {isExporting ? 'Exporting...' : 'Export .docx'}
+          </button>
         </div>
       </header>
 

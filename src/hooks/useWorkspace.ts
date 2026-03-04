@@ -8,6 +8,7 @@ import type { SectionTree } from '@/types/thesis.types'
 import { useThesis } from './useThesis'
 import { useSections } from './useSections'
 import { useAI } from './useAI'
+import { useExport } from './useExport'
 
 function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
   for (const section of sections) {
@@ -23,6 +24,7 @@ export function useWorkspace() {
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
+  const { exportDocx, isExporting } = useExport()
 
   useEffect(() => {
     if (!thesisLoading && thesis === null) router.push('/onboarding')
@@ -78,5 +80,7 @@ export function useWorkspace() {
     onTogglePromptPanel: togglePromptPanel,
     onGenerate: handleGenerate,
     onContentChange: updateSectionContent,
+    onExport: () => exportDocx(thesis?.title ?? 'skripsi'),
+    isExporting,
   }
 }
