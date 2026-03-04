@@ -49,6 +49,7 @@ function contentToDocxNodes(content: TipTapNode[]): Paragraph[] {
       paragraphs.push(
         new Paragraph({
           children: runs.length ? runs : [new TextRun({ text: '', font: FONT, size: BODY_SIZE })],
+          alignment: AlignmentType.JUSTIFIED,
           spacing: { line: LINE_SPACING, after: 120 },
         }),
       )
@@ -161,6 +162,13 @@ export async function buildDocxFromThesis(thesis: Thesis, sections: SectionTree[
   const bodyNodes = sections.flatMap((s) => sectionToDocxNodes(s))
 
   const doc = new Document({
+    styles: {
+      default: {
+        heading1: { run: { color: '000000', font: FONT } },
+        heading2: { run: { color: '000000', font: FONT } },
+        heading3: { run: { color: '000000', font: FONT } },
+      },
+    },
     numbering: {
       config: [
         {
