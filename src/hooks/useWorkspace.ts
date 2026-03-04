@@ -2,13 +2,24 @@
 
 import { useCallback } from 'react'
 import { useWorkspaceStore } from '@/store/workspace.store'
+import { textToTipTapContent } from '@/services/ai.service'
+import type { SectionTree } from '@/types/thesis.types'
 import { useThesis } from './useThesis'
 import { useSections } from './useSections'
 import { useAI } from './useAI'
 
+function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
+  for (const section of sections) {
+    if (section.id === id) return section
+    const found = findSectionById(section.children, id)
+    if (found) return found
+  }
+  return null
+}
+
 export function useWorkspace() {
-  const { thesis } = useThesis()
-  const { sections, updateSectionContent } = useSections()
+  const { thesis, isLoading: thesisLoading } = useThesis()
+  const { sections, isLoading: sectionsLoading, updateSectionContent } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const {
     activeSectionId,
@@ -23,16 +34,34 @@ export function useWorkspace() {
 
   const handleGenerate = useCallback(
     async (prompt: string) => {
-      if (!activeSectionId) return
+      if (!activeSectionId || !thesis) return
+      const activeSection = findSectionById(sections, activeSectionId)
+      if (!activeSection) return
+
       addPromptHistory(prompt)
-      await generate(prompt, activeSectionId)
+
+      const existingContent = activeSection.content
+        ? JSON.stringify(activeSection.content)
+        : undefined
+
+      const generatedText = await generate({
+        prompt,
+        sectionTitle: activeSection.title,
+        thesisTitle: thesis.title,
+        existingContent,
+      })
+
+      if (generatedText) {
+        updateSectionContent(activeSectionId, textToTipTapContent(generatedText))
+      }
     },
-    [activeSectionId, generate, addPromptHistory]
+    [activeSectionId, thesis, sections, generate, addPromptHistory, updateSectionContent],
   )
 
   return {
     thesis,
     sections,
+    isLoading: thesisLoading || sectionsLoading,
     activeSectionId,
     isSidebarOpen,
     isPromptPanelOpen,

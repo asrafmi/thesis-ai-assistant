@@ -16,3 +16,14 @@ Instruksi dari mahasiswa: ${params.prompt}
 
 Tulis konten akademik yang sesuai untuk bagian ini dalam Bahasa Indonesia.`
 }
+
+export function textToTipTapContent(text: string): Record<string, unknown> {
+  const paragraphs = text.split('\n\n').filter((p) => p.trim())
+  return {
+    type: 'doc',
+    content: paragraphs.map((p) => ({
+      type: 'paragraph',
+      content: [{ type: 'text', text: p.trim() }],
+    })),
+  }
+}

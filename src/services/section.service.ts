@@ -25,3 +25,17 @@ export function computeSectionNumber(section: SectionTree, siblings: SectionTree
   const index = siblings.findIndex((s) => s.id === section.id) + 1
   return parentNumber ? `${parentNumber}.${index}` : String(index)
 }
+
+export function updateSectionContentInTree(
+  sections: SectionTree[],
+  sectionId: string,
+  content: Record<string, unknown>,
+): SectionTree[] {
+  return sections.map((section) => {
+    if (section.id === sectionId) return { ...section, content }
+    if (section.children.length > 0) {
+      return { ...section, children: updateSectionContentInTree(section.children, sectionId, content) }
+    }
+    return section
+  })
+}
