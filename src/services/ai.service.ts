@@ -26,16 +26,40 @@ Tulis konten akademik yang sesuai untuk bagian ini dalam Bahasa Indonesia.
 Penting: JANGAN tulis ulang judul bagian atau heading di awal konten. Langsung tulis isi paragrafnya saja. Jangan gunakan markdown heading (#, ##, dll).`
 }
 
+type InlineNode = { type: 'text'; text: string; marks?: { type: string }[] }
+
+function parseInline(line: string): InlineNode[] {
+  const nodes: InlineNode[] = []
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push({ type: 'text', text: line.slice(lastIndex, match.index) })
+    }
+    if (match[1] !== undefined) {
+      nodes.push({ type: 'text', text: match[1], marks: [{ type: 'bold' }] })
+    } else {
+      nodes.push({ type: 'text', text: match[2], marks: [{ type: 'italic' }] })
+    }
+    lastIndex = regex.lastIndex
+  }
+  if (lastIndex < line.length) {
+    nodes.push({ type: 'text', text: line.slice(lastIndex) })
+  }
+  return nodes.length ? nodes : [{ type: 'text', text: '' }]
+}
+
 export function textToTipTapContent(text: string): Record<string, unknown> {
-  const paragraphs = text
-    .split('\n\n')
-    .map((p) => p.trim())
-    .filter((p) => p && !p.startsWith('#'))
+  const lines = text
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'))
   return {
     type: 'doc',
-    content: paragraphs.map((p) => ({
+    content: lines.map((line) => ({
       type: 'paragraph',
-      content: [{ type: 'text', text: p }],
+      content: parseInline(line),
     })),
   }
 }

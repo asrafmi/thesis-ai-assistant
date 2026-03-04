@@ -119,24 +119,24 @@ function sectionToDocxNodes(section: SectionTree, depth = 0): Paragraph[] {
 }
 
 function makeCoverPage(thesis: Thesis): Paragraph[] {
-  const centered = (text: string, size: number, bold = false, spacingAfter = 160): Paragraph =>
+  const cp = (text: string, size: number, bold = false, before = 0, after = 200): Paragraph =>
     new Paragraph({
       alignment: AlignmentType.CENTER,
       children: [new TextRun({ text, font: FONT, size: size * 2, bold })],
-      spacing: { after: spacingAfter },
+      spacing: { before, after },
     })
 
   return [
-    centered(thesis.university ?? '', 12),
-    centered(thesis.faculty ?? '', 12),
-    new Paragraph({ children: [], spacing: { after: 800 } }),
-    centered('SKRIPSI', 14, true, 400),
-    centered(thesis.title, 14, true, 800),
-    centered(`Pembimbing: ${thesis.supervisor ?? '-'}`, 12, false, 200),
-    centered(String(thesis.year ?? new Date().getFullYear()), 12),
-    new Paragraph({
-      children: [new PageBreak()],
-    }),
+    // Top: institution
+    cp(thesis.university ?? '', 12, false, 0, 160),
+    cp(thesis.faculty ?? '', 12, false, 0, 3800),  // big gap → pushes title to ~middle
+    // Middle: thesis label + title
+    cp('SKRIPSI', 14, true, 0, 400),
+    cp(thesis.title, 14, true, 0, 3800),            // big gap → pushes supervisor to ~bottom
+    // Bottom: supervisor + year
+    cp(`Pembimbing: ${thesis.supervisor ?? '-'}`, 12, false, 0, 200),
+    cp(String(thesis.year ?? new Date().getFullYear()), 12),
+    new Paragraph({ children: [new PageBreak()] }),
   ]
 }
 

@@ -1,6 +1,6 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useWorkspaceStore } from '@/store/workspace.store'
 import { textToTipTapContent } from '@/services/ai.service'
@@ -23,6 +23,7 @@ function findSectionById(sections: SectionTree[], id: string): SectionTree | nul
 
 export function useWorkspace() {
   const router = useRouter()
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
@@ -121,6 +122,9 @@ export function useWorkspace() {
     onTogglePromptPanel: togglePromptPanel,
     onGenerate: handleGenerate,
     onContentChange: updateSectionContent,
+    isPreviewOpen,
+    onOpenPreview: () => setIsPreviewOpen(true),
+    onClosePreview: () => setIsPreviewOpen(false),
     onExport: () => exportDocx(thesis?.title ?? 'skripsi'),
     onToggleSearch: toggleSearch,
     onDeleteReference: deleteReference,

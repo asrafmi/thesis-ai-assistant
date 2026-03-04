@@ -1,11 +1,12 @@
 // PRESENTATION LAYER. pure JSX only. No hooks, no business logic.
 
-import { BookOpen, Sparkles, Save, Download, Loader2 } from 'lucide-react';
+import { BookOpen, Sparkles, Save, Eye, Loader2 } from 'lucide-react';
 import type { SectionTree, Thesis, Reference } from '@/types/thesis.types';
 import { SidebarView } from './SidebarView';
 import { PromptPanelView } from './PromptPanelView';
 import { EditorView } from './EditorView';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ExportPreviewModal } from '@/components/ExportPreviewModal';
 
 interface WorkspaceViewProps {
   thesis: Thesis | null;
@@ -17,6 +18,7 @@ interface WorkspaceViewProps {
   isGenerating: boolean;
   isExporting: boolean;
   isLoading: boolean;
+  isPreviewOpen: boolean;
   references: Reference[];
   isSearching: boolean;
   isSearchEnabled: boolean;
@@ -25,11 +27,10 @@ interface WorkspaceViewProps {
   onToggleSidebar: () => void;
   onTogglePromptPanel: () => void;
   onGenerate: (prompt: string) => void;
-  onContentChange: (
-    sectionId: string,
-    content: Record<string, unknown>,
-  ) => void;
+  onContentChange: (sectionId: string, content: Record<string, unknown>) => void;
   onExport: () => void;
+  onOpenPreview: () => void;
+  onClosePreview: () => void;
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
 }
@@ -44,6 +45,7 @@ export function WorkspaceView({
   isGenerating,
   isExporting,
   isLoading,
+  isPreviewOpen,
   references,
   isSearching,
   isSearchEnabled,
@@ -54,6 +56,8 @@ export function WorkspaceView({
   onGenerate,
   onContentChange,
   onExport,
+  onOpenPreview,
+  onClosePreview,
   onToggleSearch,
   onDeleteReference,
 }: WorkspaceViewProps) {
@@ -72,7 +76,6 @@ export function WorkspaceView({
               <BookOpen size={15} />
             </button>
           )}
-
           {!isPromptPanelOpen && (
             <button
               onClick={onTogglePromptPanel}
@@ -91,29 +94,25 @@ export function WorkspaceView({
 
         <div className='flex items-center gap-3'>
           {isGenerating && (
-            <span className='text-xs text-primary animate-pulse'>
-              Generating...
-            </span>
+            <span className='text-xs text-primary animate-pulse'>Generating...</span>
           )}
-
           <div className='flex items-center gap-1 text-xs text-muted-foreground/70'>
             <Save size={11} />
             <span>Autosave</span>
           </div>
-
           <ThemeToggle />
           <button
-            onClick={onExport}
-            disabled={isExporting || isLoading}
+            onClick={onOpenPreview}
+            disabled={isLoading}
             type='button'
             className='flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-muted/80 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
           >
             {isExporting ? (
               <Loader2 size={11} className='animate-spin' />
             ) : (
-              <Download size={11} />
+              <Eye size={11} />
             )}
-            {isExporting ? 'Exporting...' : 'Export .docx'}
+            {isExporting ? 'Exporting...' : 'Preview & Export'}
           </button>
         </div>
       </header>
@@ -133,7 +132,6 @@ export function WorkspaceView({
               onToggle={onToggleSidebar}
             />
           )}
-
           {isPromptPanelOpen && (
             <PromptPanelView
               activeSectionId={activeSectionId}
@@ -149,7 +147,6 @@ export function WorkspaceView({
               onDeleteReference={onDeleteReference}
             />
           )}
-
           <EditorView
             sections={sections}
             activeSectionId={activeSectionId}
@@ -159,6 +156,15 @@ export function WorkspaceView({
           />
         </div>
       )}
+
+      <ExportPreviewModal
+        thesis={thesis}
+        sections={sections}
+        isOpen={isPreviewOpen}
+        isExporting={isExporting}
+        onClose={onClosePreview}
+        onExport={onExport}
+      />
     </div>
   );
 }
