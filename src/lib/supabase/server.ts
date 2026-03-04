@@ -2,6 +2,18 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
 
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>
+
+export async function getAuthUser(
+  supabase: SupabaseClient,
+): Promise<{ userId: string } | { error: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'Tidak terautentikasi' }
+  return { userId: user.id }
+}
+
 export async function createClient() {
   const cookieStore = await cookies()
 

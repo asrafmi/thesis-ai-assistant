@@ -1,15 +1,37 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { getSectionsAction, updateSectionContentAction } from '@/actions/section.actions'
+import { updateSectionContentInTree } from '@/services/section.service'
 import type { SectionTree } from '@/types/thesis.types'
 
 export function useSections(thesisId?: string) {
   const [sections, setSections] = useState<SectionTree[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  async function updateSectionContent(sectionId: string, content: Record<string, unknown>) {
-    // TODO: call section action (debounced autosave)
+  useEffect(() => {
+    if (!thesisId) return
+    setIsLoading(true)
+    getSectionsAction(thesisId).then((result) => {
+      if (result.data) setSections(result.data)
+      setIsLoading(false)
+    })
+  }, [thesisId])
+
+  function updateSectionContent(sectionId: string, content: Record<string, unknown>) {
+    setSections((prev) => updateSectionContentInTree(prev, sectionId, content))
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      updateSectionContentAction(sectionId, content)
+    }, 2000)
   }
 
-  return { sections, isLoading, updateSectionContent }
+  async function refetch() {
+    if (!thesisId) return
+    const result = await getSectionsAction(thesisId)
+    if (result.data) setSections(result.data)
+  }
+
+  return { sections, isLoading, updateSectionContent, refetch }
 }

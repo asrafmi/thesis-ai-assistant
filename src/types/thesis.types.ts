@@ -42,3 +42,19 @@ export interface Section {
 export interface SectionTree extends Section {
   children: SectionTree[]
 }
+
+export interface Reference {
+  id: string
+  thesis_id: string
+  title: string
+  authors: string | null
+  year: number | null
+  journal: string | null
+  volume: string | null
+  issue: string | null
+  pages: string | null
+  url: string | null
+  doi: string | null
+  citation_number: number
+  created_at: string
+}

@@ -207,6 +207,62 @@ export type Database = {
           },
         ]
       }
+      thesis_references: {
+        Row: {
+          authors: string | null
+          citation_number: number
+          created_at: string
+          doi: string | null
+          id: string
+          issue: string | null
+          journal: string | null
+          pages: string | null
+          thesis_id: string
+          title: string
+          url: string | null
+          volume: string | null
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          citation_number: number
+          created_at?: string
+          doi?: string | null
+          id?: string
+          issue?: string | null
+          journal?: string | null
+          pages?: string | null
+          thesis_id: string
+          title: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          citation_number?: number
+          created_at?: string
+          doi?: string | null
+          id?: string
+          issue?: string | null
+          journal?: string | null
+          pages?: string | null
+          thesis_id?: string
+          title?: string
+          url?: string | null
+          volume?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thesis_references_thesis_id_fkey"
+            columns: ["thesis_id"]
+            isOneToOne: false
+            referencedRelation: "theses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
