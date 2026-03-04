@@ -17,7 +17,7 @@ export async function getReferencesAction(
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from('references')
+    .from('thesis_references')
     .select('*')
     .eq('thesis_id', thesisId)
     .order('citation_number')
@@ -34,7 +34,7 @@ export async function searchAndAddReferencesAction(
 
   // Fetch existing URLs to avoid duplicates
   const { data: existing } = await supabase
-    .from('references')
+    .from('thesis_references')
     .select('url, citation_number')
     .eq('thesis_id', thesisId)
 
@@ -63,7 +63,7 @@ export async function searchAndAddReferencesAction(
     })
 
   if (newRefs.length > 0) {
-    const { error: insertError } = await supabase.from('references').insert(newRefs)
+    const { error: insertError } = await supabase.from('thesis_references').insert(newRefs)
     if (insertError) return { error: insertError.message }
   }
 
@@ -77,12 +77,12 @@ export async function deleteReferenceAction(
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
 
-  const { error } = await supabase.from('references').delete().eq('id', refId)
+  const { error } = await supabase.from('thesis_references').delete().eq('id', refId)
   if (error) return { error: error.message }
 
   // Renumber remaining refs
   const { data: remaining } = await supabase
-    .from('references')
+    .from('thesis_references')
     .select('id')
     .eq('thesis_id', thesisId)
     .order('citation_number')
@@ -90,7 +90,7 @@ export async function deleteReferenceAction(
   if (remaining) {
     for (let i = 0; i < remaining.length; i++) {
       await supabase
-        .from('references')
+        .from('thesis_references')
         .update({ citation_number: i + 1 })
         .eq('id', remaining[i].id)
     }
@@ -104,7 +104,7 @@ export async function updateReferenceSectionAction(thesisId: string): Promise<{ 
 
   // Fetch all refs
   const { data: refs, error: refsError } = await supabase
-    .from('references')
+    .from('thesis_references')
     .select('*')
     .eq('thesis_id', thesisId)
     .order('citation_number')

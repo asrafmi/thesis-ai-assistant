@@ -1,8 +1,10 @@
 -- ============================================================
--- References: stores cached academic references per thesis
+-- Thesis References: stores cached academic references per thesis
+-- Note: "references" is a reserved keyword in PostgreSQL, so we
+-- use "thesis_references" as the table name.
 -- ============================================================
 
-create table public.references (
+create table public.thesis_references (
   id              uuid primary key default gen_random_uuid(),
   thesis_id       uuid not null references public.theses (id) on delete cascade,
   title           text not null,
@@ -18,16 +20,16 @@ create table public.references (
   created_at      timestamptz not null default now()
 );
 
-alter table public.references enable row level security;
+alter table public.thesis_references enable row level security;
 
 create policy "Users can manage references of own theses"
-  on public.references for all
+  on public.thesis_references for all
   using (
     exists (
       select 1 from public.theses
-      where theses.id = references.thesis_id
+      where theses.id = thesis_references.thesis_id
         and theses.user_id = auth.uid()
     )
   );
 
-create index references_thesis_id_idx on public.references (thesis_id);
+create index thesis_references_thesis_id_idx on public.thesis_references (thesis_id);

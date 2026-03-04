@@ -9,6 +9,7 @@ import {
   PageBreak,
   Packer,
   LevelFormat,
+  TableOfContents,
 } from 'docx'
 import type { Thesis, SectionTree } from '@/types/thesis.types'
 
@@ -53,15 +54,11 @@ function contentToDocxNodes(content: TipTapNode[]): Paragraph[] {
       )
     } else if (node.type === 'heading') {
       const level = (node.attrs?.level as number) ?? 1
-      const headingMap: Record<number, HeadingLevel> = {
-        1: HeadingLevel.HEADING_1,
-        2: HeadingLevel.HEADING_2,
-        3: HeadingLevel.HEADING_3,
-      }
+      const headingMap = { 1: HeadingLevel.HEADING_1, 2: HeadingLevel.HEADING_2, 3: HeadingLevel.HEADING_3 }
       const runs = (node.content ?? []).flatMap(nodeToRuns)
       paragraphs.push(
         new Paragraph({
-          heading: headingMap[level] ?? HeadingLevel.HEADING_3,
+          heading: headingMap[level as 1 | 2 | 3] ?? HeadingLevel.HEADING_3,
           children: runs,
           spacing: { before: 240, after: 120 },
         }),
@@ -97,15 +94,11 @@ function contentToDocxNodes(content: TipTapNode[]): Paragraph[] {
 function sectionToDocxNodes(section: SectionTree, depth = 0): Paragraph[] {
   const nodes: Paragraph[] = []
 
-  const headingMap: Record<number, HeadingLevel> = {
-    1: HeadingLevel.HEADING_1,
-    2: HeadingLevel.HEADING_2,
-    3: HeadingLevel.HEADING_3,
-  }
+  const headingMap = { 1: HeadingLevel.HEADING_1, 2: HeadingLevel.HEADING_2, 3: HeadingLevel.HEADING_3 }
 
   nodes.push(
     new Paragraph({
-      heading: headingMap[section.level] ?? HeadingLevel.HEADING_3,
+      heading: headingMap[section.level as 1 | 2 | 3] ?? HeadingLevel.HEADING_3,
       children: [new TextRun({ text: section.title, font: FONT, bold: section.level === 1 })],
       spacing: { before: section.level === 1 ? 480 : 240, after: 120 },
     }),
@@ -146,8 +139,25 @@ function makeCoverPage(thesis: Thesis): Paragraph[] {
   ]
 }
 
+function makeTocPage() {
+  return [
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'DAFTAR ISI', font: FONT, bold: true })],
+      spacing: { before: 0, after: 240 },
+    }),
+    new TableOfContents('DAFTAR ISI', {
+      headingStyleRange: '1-3',
+      hyperlink: true,
+    }),
+    new Paragraph({ children: [new PageBreak()] }),
+  ]
+}
+
 export async function buildDocxFromThesis(thesis: Thesis, sections: SectionTree[]): Promise<string> {
   const coverNodes = makeCoverPage(thesis)
+  const tocNodes = makeTocPage()
   const bodyNodes = sections.flatMap((s) => sectionToDocxNodes(s))
 
   const doc = new Document({
@@ -178,7 +188,7 @@ export async function buildDocxFromThesis(thesis: Thesis, sections: SectionTree[
             },
           },
         },
-        children: [...coverNodes, ...bodyNodes],
+        children: [...coverNodes, ...tocNodes, ...bodyNodes],
       },
     ],
   })

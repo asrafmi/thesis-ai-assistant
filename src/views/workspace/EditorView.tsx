@@ -1,5 +1,8 @@
+'use client'
+
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
+import { useEffect } from 'react'
 import type { SectionTree } from '@/types/thesis.types'
 import { TipTapEditor } from './TipTapEditor'
 
@@ -17,6 +20,9 @@ const HEADING_STYLES: Record<number, string> = {
 }
 
 const SKELETON_LINES = [100, 92, 97, 85, 94, 78, 88, 60]
+
+// Sections excluded from DAFTAR ISI (meta sections)
+const META_SECTIONS = new Set(['DAFTAR PUSTAKA'])
 
 function TypingSkeleton() {
   return (
@@ -37,6 +43,48 @@ function TypingSkeleton() {
           className="inline-block h-3.5 w-0.5 rounded-sm bg-zinc-400 animate-pulse"
           style={{ animationDuration: '0.8s' }}
         />
+      </div>
+    </div>
+  )
+}
+
+function flattenForToc(sections: SectionTree[], depth = 0): { section: SectionTree; depth: number }[] {
+  return sections.flatMap((s) => {
+    if (META_SECTIONS.has(s.title)) return []
+    return [{ section: s, depth }, ...flattenForToc(s.children, depth + 1)]
+  })
+}
+
+function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
+  const entries = flattenForToc(sections)
+
+  function scrollTo(id: string) {
+    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  return (
+    <div id="section-daftar-isi" className="mb-2">
+      <h2 className={HEADING_STYLES[1]}>DAFTAR ISI</h2>
+      <div className="rounded-md px-3 py-3 bg-zinc-900/60">
+        {entries.length === 0 ? (
+          <p className="text-xs text-zinc-600 italic">Belum ada bagian.</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {entries.map(({ section, depth }) => (
+              <button
+                key={section.id}
+                onClick={() => scrollTo(section.id)}
+                className="flex items-baseline gap-1 text-left group w-full"
+                style={{ paddingLeft: `${depth * 18}px` }}
+              >
+                <span className={`text-sm group-hover:text-blue-400 transition-colors shrink-0 ${depth === 0 ? 'text-zinc-200 font-semibold' : 'text-zinc-400'}`}>
+                  {section.title}
+                </span>
+                <span className="flex-1 border-b border-dotted border-zinc-700 mb-0.75 min-w-2" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -89,6 +137,12 @@ function SectionBlock({
 }
 
 export function EditorView({ sections, activeSectionId, isGenerating, onContentChange }: EditorViewProps) {
+  useEffect(() => {
+    if (!activeSectionId) return
+    const el = document.getElementById(`section-${activeSectionId}`)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [activeSectionId])
+
   if (sections.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
@@ -100,6 +154,7 @@ export function EditorView({ sections, activeSectionId, isGenerating, onContentC
   return (
     <div className="flex-1 overflow-auto bg-zinc-950">
       <div className="max-w-3xl mx-auto px-12 py-10 pb-32">
+        <DaftarIsiSection sections={sections} />
         {sections.map((section) => (
           <SectionBlock
             key={section.id}
