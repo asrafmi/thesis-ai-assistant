@@ -104,6 +104,7 @@ export function WorkspaceView({
           <EditorView
             sections={sections}
             activeSectionId={activeSectionId}
+            isGenerating={isGenerating}
             onContentChange={onContentChange}
           />
         </div>
