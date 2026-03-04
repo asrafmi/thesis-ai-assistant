@@ -31,6 +31,11 @@ export async function registerAction(
     full_name: fullName,
   })
 
-  if (profileError) return { error: profileError.message }
+  if (profileError) {
+    if (profileError.code === '23505') {
+      return { error: 'Email ini sudah terdaftar. Silakan login.' }
+    }
+    return { error: profileError.message }
+  }
   return {}
 }
