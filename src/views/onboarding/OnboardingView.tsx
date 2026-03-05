@@ -2,12 +2,13 @@
 
 // PRESENTATION LAYER — step-based journey UI. Presentation state (step, formData, lottieData) lives here.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Lottie from 'lottie-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { ArrowRight, ArrowLeft, Check, Loader2, FileText, Building2, GraduationCap, FlaskConical } from 'lucide-react'
 import type { TemplateType } from '@/types/thesis.types'
+import { searchUniversitiesAction } from '@/actions/university.actions'
 
 interface OnboardingFormData {
   title: string
@@ -196,6 +197,13 @@ export function OnboardingView({ onSubmit, isLoading, error }: OnboardingViewPro
   // null = failed to load, undefined = not yet attempted, object = loaded
   const [lottieData, setLottieData] = useState<Record<number, object | null>>({})
 
+  // University combobox state
+  const [uniQuery, setUniQuery] = useState('')
+  const [uniResults, setUniResults] = useState<{ name: string; university_type: string; province: string }[]>([])
+  const [isUniLoading, setIsUniLoading] = useState(false)
+  const [showUniDropdown, setShowUniDropdown] = useState(false)
+  const uniDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const step = STEPS[currentStep]
   const isLastStep = currentStep === STEPS.length - 1
 
@@ -318,17 +326,55 @@ export function OnboardingView({ onSubmit, isLoading, error }: OnboardingViewPro
               {/* Step 2 — Institution */}
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <div>
+                  <div className="relative">
                     <label className={labelCls}>Universitas</label>
-                    <input
-                      autoFocus
-                      type="text"
-                      value={formData.university ?? ''}
-                      onChange={(e) => set('university', e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && goNext()}
-                      placeholder="Universitas Indonesia"
-                      className={inputCls}
-                    />
+                    <div className="relative">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={uniQuery}
+                        onChange={(e) => {
+                          const q = e.target.value
+                          setUniQuery(q)
+                          set('university', q)
+                          setShowUniDropdown(true)
+                          if (uniDebounceRef.current) clearTimeout(uniDebounceRef.current)
+                          if (!q.trim()) { setUniResults([]); return }
+                          uniDebounceRef.current = setTimeout(async () => {
+                            setIsUniLoading(true)
+                            const results = await searchUniversitiesAction(q)
+                            setUniResults(results)
+                            setIsUniLoading(false)
+                          }, 350)
+                        }}
+                        onKeyDown={(e) => e.key === 'Enter' && goNext()}
+                        onBlur={() => setTimeout(() => setShowUniDropdown(false), 150)}
+                        onFocus={() => uniResults.length > 0 && setShowUniDropdown(true)}
+                        placeholder="Cari universitas..."
+                        className={inputCls}
+                      />
+                      {isUniLoading && (
+                        <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-zinc-500" />
+                      )}
+                    </div>
+                    {showUniDropdown && uniResults.length > 0 && (
+                      <ul className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-white/10 bg-[#1c1c1f] py-1 shadow-xl">
+                        {uniResults.map((u) => (
+                          <li
+                            key={u.name}
+                            onMouseDown={() => {
+                              set('university', u.name)
+                              setUniQuery(u.name)
+                              setShowUniDropdown(false)
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-white/5"
+                          >
+                            <p className="text-sm text-white">{u.name}</p>
+                            <p className="text-xs text-zinc-500">{u.university_type} · {u.province}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <div>
                     <label className={labelCls}>Fakultas</label>
