@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { loginAction, registerAction } from '@/actions/auth.actions'
+import { loginAction, logoutAction, registerAction } from '@/actions/auth.actions'
 import type { Profile } from '@/types/thesis.types'
 
 export function useAuth() {
@@ -41,10 +41,17 @@ export function useAuth() {
     setIsLoading(false)
   }
 
+  async function logout() {
+    setIsLoading(true)
+    await logoutAction()
+    router.push('/login')
+    setIsLoading(false)
+  }
+
   async function updateProfile(data: Partial<Profile>) {
     // TODO: implement profile update
     setProfile((prev) => (prev ? { ...prev, ...data } : prev))
   }
 
-  return { profile, isLoading, error, login, register, updateProfile }
+  return { profile, isLoading, error, login, register, logout, updateProfile }
 }

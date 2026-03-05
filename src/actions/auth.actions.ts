@@ -14,6 +14,13 @@ export async function loginAction(
   return {}
 }
 
+export async function logoutAction(): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signOut()
+  if (error) return { error: error.message }
+  return {}
+}
+
 export async function registerAction(
   email: string,
   password: string,

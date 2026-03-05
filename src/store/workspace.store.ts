@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import type { Section } from '@/types/thesis.types'
 
 interface WorkspaceState {
   activeSectionId: string | null

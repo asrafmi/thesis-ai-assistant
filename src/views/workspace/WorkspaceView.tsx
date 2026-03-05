@@ -1,11 +1,19 @@
 // PRESENTATION LAYER. pure JSX only. No hooks, no business logic.
 
-import { BookOpen, Sparkles, Save, Download, Loader2 } from 'lucide-react';
+import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User } from 'lucide-react';
 import type { SectionTree, Thesis, Reference } from '@/types/thesis.types';
 import { SidebarView } from './SidebarView';
 import { PromptPanelView } from './PromptPanelView';
 import { EditorView } from './EditorView';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ExportPreviewModal } from '@/components/ExportPreviewModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface WorkspaceViewProps {
   thesis: Thesis | null;
@@ -17,6 +25,7 @@ interface WorkspaceViewProps {
   isGenerating: boolean;
   isExporting: boolean;
   isLoading: boolean;
+  isPreviewOpen: boolean;
   references: Reference[];
   isSearching: boolean;
   isSearchEnabled: boolean;
@@ -24,14 +33,18 @@ interface WorkspaceViewProps {
   onSelectSection: (id: string) => void;
   onToggleSidebar: () => void;
   onTogglePromptPanel: () => void;
+  onRenameSection: (sectionId: string, title: string) => void;
+  onAddSection: (parentId: string | null, title: string, level: number) => void;
+  onDeleteSection: (sectionId: string) => void;
+  streamingContent: Record<string, string>;
   onGenerate: (prompt: string) => void;
-  onContentChange: (
-    sectionId: string,
-    content: Record<string, unknown>,
-  ) => void;
+  onContentChange: (sectionId: string, content: Record<string, unknown>) => void;
   onExport: () => void;
+  onOpenPreview: () => void;
+  onClosePreview: () => void;
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
+  onLogout: () => void;
 }
 
 export function WorkspaceView({
@@ -44,6 +57,7 @@ export function WorkspaceView({
   isGenerating,
   isExporting,
   isLoading,
+  isPreviewOpen,
   references,
   isSearching,
   isSearchEnabled,
@@ -51,11 +65,18 @@ export function WorkspaceView({
   onSelectSection,
   onToggleSidebar,
   onTogglePromptPanel,
+  onRenameSection,
+  onAddSection,
+  onDeleteSection,
+  streamingContent,
   onGenerate,
   onContentChange,
   onExport,
+  onOpenPreview,
+  onClosePreview,
   onToggleSearch,
   onDeleteReference,
+  onLogout,
 }: WorkspaceViewProps) {
   return (
     <div className='flex h-screen flex-col bg-background text-foreground'>
@@ -72,7 +93,6 @@ export function WorkspaceView({
               <BookOpen size={15} />
             </button>
           )}
-
           {!isPromptPanelOpen && (
             <button
               onClick={onTogglePromptPanel}
@@ -91,30 +111,47 @@ export function WorkspaceView({
 
         <div className='flex items-center gap-3'>
           {isGenerating && (
-            <span className='text-xs text-primary animate-pulse'>
-              Generating...
-            </span>
+            <span className='text-xs text-primary animate-pulse'>Generating...</span>
           )}
-
           <div className='flex items-center gap-1 text-xs text-muted-foreground/70'>
             <Save size={11} />
             <span>Autosave</span>
           </div>
-
           <ThemeToggle />
           <button
-            onClick={onExport}
-            disabled={isExporting || isLoading}
+            onClick={onOpenPreview}
+            disabled={isLoading}
             type='button'
             className='flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs text-foreground/90 hover:bg-muted/80 hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
           >
             {isExporting ? (
               <Loader2 size={11} className='animate-spin' />
             ) : (
-              <Download size={11} />
+              <Eye size={11} />
             )}
-            {isExporting ? 'Exporting...' : 'Export .docx'}
+            {isExporting ? 'Exporting...' : 'Preview & Export'}
           </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                className='flex items-center justify-center rounded-full w-7 h-7 bg-muted hover:bg-muted/80 transition-colors'
+                title='User menu'
+              >
+                <User size={13} className='text-muted-foreground' />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-40'>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onLogout}
+                className='text-destructive focus:text-destructive cursor-pointer'
+              >
+                <LogOut size={13} className='mr-2' />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -131,9 +168,11 @@ export function WorkspaceView({
               activeSectionId={activeSectionId}
               onSelectSection={onSelectSection}
               onToggle={onToggleSidebar}
+              onRenameSection={onRenameSection}
+              onAddSection={onAddSection}
+              onDeleteSection={onDeleteSection}
             />
           )}
-
           {isPromptPanelOpen && (
             <PromptPanelView
               activeSectionId={activeSectionId}
@@ -149,15 +188,24 @@ export function WorkspaceView({
               onDeleteReference={onDeleteReference}
             />
           )}
-
           <EditorView
             sections={sections}
             activeSectionId={activeSectionId}
-            isGenerating={isGenerating}
+            streamingContent={streamingContent}
             onContentChange={onContentChange}
+            onSelectSection={onSelectSection}
           />
         </div>
       )}
+
+      <ExportPreviewModal
+        thesis={thesis}
+        sections={sections}
+        isOpen={isPreviewOpen}
+        isExporting={isExporting}
+        onClose={onClosePreview}
+        onExport={onExport}
+      />
     </div>
   );
 }

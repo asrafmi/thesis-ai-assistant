@@ -133,3 +133,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Preview modal content — always light (simulates printed page) */
+.preview-content          { overflow-wrap: anywhere; word-break: break-word; }
+.preview-content p        { margin-bottom: 0.6rem; font-size: 0.8rem; line-height: 1.7; text-align: justify; }
+.preview-content ul       { list-style: disc; margin-left: 1.25rem; margin-bottom: 0.6rem; }
+.preview-content ol       { list-style: decimal; margin-left: 1.25rem; margin-bottom: 0.6rem; }
+.preview-content li       { font-size: 0.8rem; margin-bottom: 0.2rem; }
+.preview-content strong   { font-weight: 600; }
+.preview-content em       { font-style: italic; }
+.preview-content s        { text-decoration: line-through; }
+.preview-content img      { max-width: 100%; margin: 0.5rem 0; border-radius: 4px; }

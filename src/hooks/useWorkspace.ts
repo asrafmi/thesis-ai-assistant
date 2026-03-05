@@ -1,6 +1,6 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useWorkspaceStore } from '@/store/workspace.store'
 import { textToTipTapContent } from '@/services/ai.service'
@@ -11,6 +11,7 @@ import { useSections } from './useSections'
 import { useAI } from './useAI'
 import { useExport } from './useExport'
 import { useReferences } from './useReferences'
+import { useAuth } from './useAuth'
 
 function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
   for (const section of sections) {
@@ -23,9 +24,12 @@ function findSectionById(sections: SectionTree[], id: string): SectionTree | nul
 
 export function useWorkspace() {
   const router = useRouter()
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const { thesis, isLoading: thesisLoading } = useThesis()
-  const { sections, isLoading: sectionsLoading, updateSectionContent, refetch: refetchSections } = useSections(thesis?.id)
+  const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
+  const { logout } = useAuth()
   const { exportDocx, isExporting } = useExport()
   const {
     references,
@@ -69,17 +73,31 @@ export function useWorkspace() {
         ? JSON.stringify(activeSection.content)
         : undefined
 
-      // 2. Generate with references context
-      const generatedText = await generate({
-        prompt,
-        sectionTitle: activeSection.title,
-        thesisTitle: thesis.title,
-        existingContent,
-        references: currentRefs.length > 0 ? currentRefs : undefined,
+      // 2. Stream generate with references context
+      const sectionId = activeSectionId
+      setStreamingContent((prev) => ({ ...prev, [sectionId]: '' }))
+
+      const generatedText = await generate(
+        {
+          prompt,
+          sectionTitle: activeSection.title,
+          thesisTitle: thesis.title,
+          existingContent,
+          references: currentRefs.length > 0 ? currentRefs : undefined,
+        },
+        (accumulated) => {
+          setStreamingContent((prev) => ({ ...prev, [sectionId]: accumulated }))
+        },
+      )
+
+      setStreamingContent((prev) => {
+        const next = { ...prev }
+        delete next[sectionId]
+        return next
       })
 
       if (generatedText) {
-        updateSectionContent(activeSectionId, textToTipTapContent(generatedText))
+        updateSectionContent(sectionId, textToTipTapContent(generatedText))
 
         // 3. Update DAFTAR PUSTAKA section; refetch if it didn't exist yet
         if (currentRefs.length > 0) {
@@ -100,6 +118,7 @@ export function useWorkspace() {
       addPromptHistory,
       updateSectionContent,
       searchAndAdd,
+      setStreamingContent,
     ],
   )
 
@@ -121,9 +140,17 @@ export function useWorkspace() {
     onTogglePromptPanel: togglePromptPanel,
     onGenerate: handleGenerate,
     onContentChange: updateSectionContent,
+    isPreviewOpen,
+    onOpenPreview: () => setIsPreviewOpen(true),
+    onClosePreview: () => setIsPreviewOpen(false),
     onExport: () => exportDocx(thesis?.title ?? 'skripsi'),
     onToggleSearch: toggleSearch,
     onDeleteReference: deleteReference,
     isExporting,
+    onRenameSection: renameSection,
+    onAddSection: addSection,
+    onDeleteSection: deleteSection,
+    streamingContent,
+    onLogout: logout,
   }
 }

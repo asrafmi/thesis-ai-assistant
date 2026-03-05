@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm create next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-turbopack --import-alias \"@/*\")"
+      "Bash(pnpm create next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-turbopack --import-alias \"@/*\")",
+      "Bash(npx shadcn@latest add dialog alert-dialog --yes)",
+      "Bash(npm install axios)",
+      "Bash(pnpm add axios)"
     ]
   }
 }

@@ -1,120 +1,123 @@
-'use client'
+'use client';
 
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
-import { useEffect } from 'react'
-import type { SectionTree } from '@/types/thesis.types'
-import { TipTapEditor } from './TipTapEditor'
+import { useEffect } from 'react';
+import type { SectionTree } from '@/types/thesis.types';
+import { TipTapEditor } from './TipTapEditor';
 
 interface EditorViewProps {
-  sections: SectionTree[]
-  activeSectionId: string | null
-  isGenerating: boolean
-  onContentChange: (sectionId: string, content: Record<string, unknown>) => void
+  sections: SectionTree[];
+  activeSectionId: string | null;
+  streamingContent: Record<string, string>;
+  onContentChange: (
+    sectionId: string,
+    content: Record<string, unknown>,
+  ) => void;
+  onSelectSection: (id: string) => void;
 }
 
 const HEADING_STYLES: Record<number, string> = {
   1: 'text-xl font-bold text-foreground mt-10 mb-2',
   2: 'text-base font-semibold text-foreground/90 mt-6 mb-1',
   3: 'text-sm font-medium text-foreground/80 mt-4 mb-1',
-}
-
-const SKELETON_LINES = [100, 92, 97, 85, 94, 78, 88, 60]
+};
 
 // Sections excluded from DAFTAR ISI (meta sections)
-const META_SECTIONS = new Set(['DAFTAR PUSTAKA'])
+const META_SECTIONS = new Set(['DAFTAR PUSTAKA']);
 
-function TypingSkeleton() {
-  return (
-    <div className="space-y-2.5 py-1 min-h-15">
-      {SKELETON_LINES.map((width, i) => (
-        <div
-          key={i}
-          className="h-3 rounded-sm bg-muted animate-pulse"
-          style={{ width: `${width}%`, animationDelay: `${i * 120}ms` }}
-        />
-      ))}
-      <div className="flex items-center gap-1">
-        <div
-          className="h-3 rounded-sm bg-muted animate-pulse"
-          style={{ width: '38%', animationDelay: `${SKELETON_LINES.length * 120}ms` }}
-        />
-        <span
-          className="inline-block h-3.5 w-0.5 rounded-sm bg-muted-foreground animate-pulse"
-          style={{ animationDuration: '0.8s' }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function flattenForToc(sections: SectionTree[], depth = 0): { section: SectionTree; depth: number }[] {
+function flattenForToc(
+  sections: SectionTree[],
+  depth = 0,
+): { section: SectionTree; depth: number }[] {
   return sections.flatMap((s) => {
-    if (META_SECTIONS.has(s.title)) return []
-    return [{ section: s, depth }, ...flattenForToc(s.children, depth + 1)]
-  })
+    if (META_SECTIONS.has(s.title)) return [];
+    return [{ section: s, depth }, ...flattenForToc(s.children, depth + 1)];
+  });
 }
 
 function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
-  const entries = flattenForToc(sections)
+  const entries = flattenForToc(sections);
 
   function scrollTo(id: string) {
-    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document
+      .getElementById(`section-${id}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   return (
-    <div id="section-daftar-isi" className="mb-2">
+    <div id='section-daftar-isi' className='mb-2'>
       <h2 className={HEADING_STYLES[1]}>DAFTAR ISI</h2>
-      <div className="rounded-md px-3 py-3 bg-card/60">
+      <div className='rounded-md px-3 py-3 bg-card/60'>
         {entries.length === 0 ? (
-          <p className="text-xs text-muted-foreground/60 italic">Belum ada bagian.</p>
+          <p className='text-xs text-muted-foreground/60 italic'>
+            Belum ada bagian.
+          </p>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className='flex flex-col gap-1'>
             {entries.map(({ section, depth }) => (
               <button
                 key={section.id}
                 onClick={() => scrollTo(section.id)}
-                className="flex items-baseline gap-1 text-left group w-full"
+                className='flex items-baseline gap-1 text-left group w-full'
                 style={{ paddingLeft: `${depth * 18}px` }}
               >
-                <span className={`text-sm group-hover:text-blue-400 transition-colors shrink-0 ${depth === 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                <span
+                  className={`text-sm group-hover:text-blue-400 transition-colors shrink-0 ${depth === 0 ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
+                >
                   {section.title}
                 </span>
-                <span className="flex-1 border-b border-dotted border-border mb-0.75 min-w-2" />
+                <span className='flex-1 border-b border-dotted border-border mb-0.75 min-w-2' />
               </button>
             ))}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function SectionBlock({
   section,
   activeSectionId,
-  isGenerating,
+  streamingContent,
   onContentChange,
+  onClickSection,
 }: {
-  section: SectionTree
-  activeSectionId: string | null
-  isGenerating: boolean
-  onContentChange: (sectionId: string, content: Record<string, unknown>) => void
+  section: SectionTree;
+  activeSectionId: string | null;
+  streamingContent: Record<string, string>;
+  onContentChange: (
+    sectionId: string,
+    content: Record<string, unknown>,
+  ) => void;
+  onClickSection: (id: string) => void;
 }) {
-  const isActive = section.id === activeSectionId
-  const isWriting = isActive && isGenerating
-  const headingClass = HEADING_STYLES[section.level] ?? HEADING_STYLES[3]
+  const isActive = section.id === activeSectionId;
+  const streamingText = streamingContent[section.id];
+  const isStreaming = streamingText !== undefined;
+  const headingClass = HEADING_STYLES[section.level] ?? HEADING_STYLES[3];
 
   return (
-    <div id={`section-${section.id}`}>
+    <div
+      id={`section-${section.id}`}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClickSection(section.id)
+      }}
+      className='mb-6 cursor-text'
+    >
       <h2 className={headingClass}>{section.title}</h2>
       <div
         className={`rounded-md px-3 py-2 transition-colors ${
           isActive ? 'ring-1 ring-blue-600/40 bg-card/60' : 'bg-transparent'
         }`}
       >
-        {isWriting ? (
-          <TypingSkeleton />
+        {isStreaming ? (
+          <div className='text-sm leading-relaxed text-foreground min-h-15 whitespace-pre-wrap'>
+            {streamingText}
+            <span className='inline-block w-0.5 h-[1em] bg-primary align-middle ml-0.5 animate-pulse' />
+          </div>
         ) : (
           <TipTapEditor
             content={section.content}
@@ -123,48 +126,60 @@ function SectionBlock({
           />
         )}
       </div>
-      {section.children.map((child) => (
-        <SectionBlock
-          key={child.id}
-          section={child}
-          activeSectionId={activeSectionId}
-          isGenerating={isGenerating}
-          onContentChange={onContentChange}
-        />
-      ))}
+      {section.children.length > 0 && (
+        <div className='ml-4 pl-3 border-l border-border/30'>
+          {section.children.map((child) => (
+            <SectionBlock
+              key={child.id}
+              section={child}
+              activeSectionId={activeSectionId}
+              streamingContent={streamingContent}
+              onContentChange={onContentChange}
+              onClickSection={onClickSection}
+            />
+          ))}
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
-export function EditorView({ sections, activeSectionId, isGenerating, onContentChange }: EditorViewProps) {
+export function EditorView({
+  sections,
+  activeSectionId,
+  streamingContent,
+  onContentChange,
+  onSelectSection,
+}: EditorViewProps) {
   useEffect(() => {
-    if (!activeSectionId) return
-    const el = document.getElementById(`section-${activeSectionId}`)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [activeSectionId])
+    if (!activeSectionId) return;
+    const el = document.getElementById(`section-${activeSectionId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [activeSectionId]);
 
   if (sections.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+      <div className='flex-1 flex items-center justify-center text-muted-foreground text-sm'>
         Skripsi belum memiliki bagian.
       </div>
-    )
+    );
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-background">
-      <div className="max-w-3xl mx-auto px-12 py-10 pb-32">
+    <div className='flex-1 overflow-auto bg-background'>
+      <div className='max-w-3xl mx-auto px-12 py-10 pb-32'>
         <DaftarIsiSection sections={sections} />
         {sections.map((section) => (
           <SectionBlock
             key={section.id}
             section={section}
             activeSectionId={activeSectionId}
-            isGenerating={isGenerating}
+            streamingContent={streamingContent}
             onContentChange={onContentChange}
+            onClickSection={onSelectSection}
           />
         ))}
       </div>
     </div>
-  )
+  );
 }

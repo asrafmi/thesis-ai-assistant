@@ -26,6 +26,29 @@ export function computeSectionNumber(section: SectionTree, siblings: SectionTree
   return parentNumber ? `${parentNumber}.${index}` : String(index)
 }
 
+export function renameSectionInTree(
+  sections: SectionTree[],
+  sectionId: string,
+  title: string,
+): SectionTree[] {
+  return sections.map((section) => {
+    if (section.id === sectionId) return { ...section, title }
+    if (section.children.length > 0) {
+      return { ...section, children: renameSectionInTree(section.children, sectionId, title) }
+    }
+    return section
+  })
+}
+
+export function removeSectionFromTree(sections: SectionTree[], sectionId: string): SectionTree[] {
+  return sections
+    .filter((s) => s.id !== sectionId)
+    .map((s) => ({
+      ...s,
+      children: removeSectionFromTree(s.children, sectionId),
+    }))
+}
+
 export function updateSectionContentInTree(
   sections: SectionTree[],
   sectionId: string,
