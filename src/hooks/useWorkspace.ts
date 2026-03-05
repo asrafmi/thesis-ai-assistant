@@ -11,6 +11,7 @@ import { useSections } from './useSections'
 import { useAI } from './useAI'
 import { useExport } from './useExport'
 import { useReferences } from './useReferences'
+import { useAuth } from './useAuth'
 
 function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
   for (const section of sections) {
@@ -28,6 +29,7 @@ export function useWorkspace() {
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
+  const { logout } = useAuth()
   const { exportDocx, isExporting } = useExport()
   const {
     references,
@@ -149,5 +151,6 @@ export function useWorkspace() {
     onAddSection: addSection,
     onDeleteSection: deleteSection,
     streamingContent,
+    onLogout: logout,
   }
 }

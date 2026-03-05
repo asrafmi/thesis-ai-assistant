@@ -1,12 +1,19 @@
 // PRESENTATION LAYER. pure JSX only. No hooks, no business logic.
 
-import { BookOpen, Sparkles, Save, Eye, Loader2 } from 'lucide-react';
+import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User } from 'lucide-react';
 import type { SectionTree, Thesis, Reference } from '@/types/thesis.types';
 import { SidebarView } from './SidebarView';
 import { PromptPanelView } from './PromptPanelView';
 import { EditorView } from './EditorView';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ExportPreviewModal } from '@/components/ExportPreviewModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface WorkspaceViewProps {
   thesis: Thesis | null;
@@ -37,6 +44,7 @@ interface WorkspaceViewProps {
   onClosePreview: () => void;
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
+  onLogout: () => void;
 }
 
 export function WorkspaceView({
@@ -68,6 +76,7 @@ export function WorkspaceView({
   onClosePreview,
   onToggleSearch,
   onDeleteReference,
+  onLogout,
 }: WorkspaceViewProps) {
   return (
     <div className='flex h-screen flex-col bg-background text-foreground'>
@@ -122,6 +131,27 @@ export function WorkspaceView({
             )}
             {isExporting ? 'Exporting...' : 'Preview & Export'}
           </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type='button'
+                className='flex items-center justify-center rounded-full w-7 h-7 bg-muted hover:bg-muted/80 transition-colors'
+                title='User menu'
+              >
+                <User size={13} className='text-muted-foreground' />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-40'>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onLogout}
+                className='text-destructive focus:text-destructive cursor-pointer'
+              >
+                <LogOut size={13} className='mr-2' />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
