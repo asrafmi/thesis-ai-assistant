@@ -9,7 +9,7 @@ import { TipTapEditor } from './TipTapEditor';
 interface EditorViewProps {
   sections: SectionTree[];
   activeSectionId: string | null;
-  isGenerating: boolean;
+  streamingContent: Record<string, string>;
   onContentChange: (
     sectionId: string,
     content: Record<string, unknown>,
@@ -23,37 +23,8 @@ const HEADING_STYLES: Record<number, string> = {
   3: 'text-sm font-medium text-foreground/80 mt-4 mb-1',
 };
 
-const SKELETON_LINES = [100, 92, 97, 85, 94, 78, 88, 60];
-
 // Sections excluded from DAFTAR ISI (meta sections)
 const META_SECTIONS = new Set(['DAFTAR PUSTAKA']);
-
-function TypingSkeleton() {
-  return (
-    <div className='space-y-2.5 py-1 min-h-15'>
-      {SKELETON_LINES.map((width, i) => (
-        <div
-          key={i}
-          className='h-3 rounded-sm bg-muted animate-pulse'
-          style={{ width: `${width}%`, animationDelay: `${i * 120}ms` }}
-        />
-      ))}
-      <div className='flex items-center gap-1'>
-        <div
-          className='h-3 rounded-sm bg-muted animate-pulse'
-          style={{
-            width: '38%',
-            animationDelay: `${SKELETON_LINES.length * 120}ms`,
-          }}
-        />
-        <span
-          className='inline-block h-3.5 w-0.5 rounded-sm bg-muted-foreground animate-pulse'
-          style={{ animationDuration: '0.8s' }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function flattenForToc(
   sections: SectionTree[],
@@ -109,13 +80,13 @@ function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
 function SectionBlock({
   section,
   activeSectionId,
-  isGenerating,
+  streamingContent,
   onContentChange,
   onClickSection,
 }: {
   section: SectionTree;
   activeSectionId: string | null;
-  isGenerating: boolean;
+  streamingContent: Record<string, string>;
   onContentChange: (
     sectionId: string,
     content: Record<string, unknown>,
@@ -123,7 +94,8 @@ function SectionBlock({
   onClickSection: (id: string) => void;
 }) {
   const isActive = section.id === activeSectionId;
-  const isWriting = isActive && isGenerating;
+  const streamingText = streamingContent[section.id];
+  const isStreaming = streamingText !== undefined;
   const headingClass = HEADING_STYLES[section.level] ?? HEADING_STYLES[3];
 
   return (
@@ -141,8 +113,11 @@ function SectionBlock({
           isActive ? 'ring-1 ring-blue-600/40 bg-card/60' : 'bg-transparent'
         }`}
       >
-        {isWriting ? (
-          <TypingSkeleton />
+        {isStreaming ? (
+          <div className='text-sm leading-relaxed text-foreground min-h-15 whitespace-pre-wrap'>
+            {streamingText}
+            <span className='inline-block w-0.5 h-[1em] bg-primary align-middle ml-0.5 animate-pulse' />
+          </div>
         ) : (
           <TipTapEditor
             content={section.content}
@@ -158,7 +133,7 @@ function SectionBlock({
               key={child.id}
               section={child}
               activeSectionId={activeSectionId}
-              isGenerating={isGenerating}
+              streamingContent={streamingContent}
               onContentChange={onContentChange}
               onClickSection={onClickSection}
             />
@@ -172,7 +147,7 @@ function SectionBlock({
 export function EditorView({
   sections,
   activeSectionId,
-  isGenerating,
+  streamingContent,
   onContentChange,
   onSelectSection,
 }: EditorViewProps) {
@@ -199,7 +174,7 @@ export function EditorView({
             key={section.id}
             section={section}
             activeSectionId={activeSectionId}
-            isGenerating={isGenerating}
+            streamingContent={streamingContent}
             onContentChange={onContentChange}
             onClickSection={onSelectSection}
           />

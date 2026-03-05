@@ -29,6 +29,7 @@ interface WorkspaceViewProps {
   onRenameSection: (sectionId: string, title: string) => void;
   onAddSection: (parentId: string | null, title: string, level: number) => void;
   onDeleteSection: (sectionId: string) => void;
+  streamingContent: Record<string, string>;
   onGenerate: (prompt: string) => void;
   onContentChange: (sectionId: string, content: Record<string, unknown>) => void;
   onExport: () => void;
@@ -59,6 +60,7 @@ export function WorkspaceView({
   onRenameSection,
   onAddSection,
   onDeleteSection,
+  streamingContent,
   onGenerate,
   onContentChange,
   onExport,
@@ -159,7 +161,7 @@ export function WorkspaceView({
           <EditorView
             sections={sections}
             activeSectionId={activeSectionId}
-            isGenerating={isGenerating}
+            streamingContent={streamingContent}
             onContentChange={onContentChange}
             onSelectSection={onSelectSection}
           />

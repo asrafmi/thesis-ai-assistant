@@ -24,6 +24,7 @@ function findSectionById(sections: SectionTree[], id: string): SectionTree | nul
 export function useWorkspace() {
   const router = useRouter()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
@@ -70,17 +71,31 @@ export function useWorkspace() {
         ? JSON.stringify(activeSection.content)
         : undefined
 
-      // 2. Generate with references context
-      const generatedText = await generate({
-        prompt,
-        sectionTitle: activeSection.title,
-        thesisTitle: thesis.title,
-        existingContent,
-        references: currentRefs.length > 0 ? currentRefs : undefined,
+      // 2. Stream generate with references context
+      const sectionId = activeSectionId
+      setStreamingContent((prev) => ({ ...prev, [sectionId]: '' }))
+
+      const generatedText = await generate(
+        {
+          prompt,
+          sectionTitle: activeSection.title,
+          thesisTitle: thesis.title,
+          existingContent,
+          references: currentRefs.length > 0 ? currentRefs : undefined,
+        },
+        (accumulated) => {
+          setStreamingContent((prev) => ({ ...prev, [sectionId]: accumulated }))
+        },
+      )
+
+      setStreamingContent((prev) => {
+        const next = { ...prev }
+        delete next[sectionId]
+        return next
       })
 
       if (generatedText) {
-        updateSectionContent(activeSectionId, textToTipTapContent(generatedText))
+        updateSectionContent(sectionId, textToTipTapContent(generatedText))
 
         // 3. Update DAFTAR PUSTAKA section; refetch if it didn't exist yet
         if (currentRefs.length > 0) {
@@ -101,6 +116,7 @@ export function useWorkspace() {
       addPromptHistory,
       updateSectionContent,
       searchAndAdd,
+      setStreamingContent,
     ],
   )
 
@@ -132,5 +148,6 @@ export function useWorkspace() {
     onRenameSection: renameSection,
     onAddSection: addSection,
     onDeleteSection: deleteSection,
+    streamingContent,
   }
 }
