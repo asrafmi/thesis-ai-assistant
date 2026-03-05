@@ -26,6 +26,9 @@ interface WorkspaceViewProps {
   onSelectSection: (id: string) => void;
   onToggleSidebar: () => void;
   onTogglePromptPanel: () => void;
+  onRenameSection: (sectionId: string, title: string) => void;
+  onAddSection: (parentId: string | null, title: string, level: number) => void;
+  onDeleteSection: (sectionId: string) => void;
   onGenerate: (prompt: string) => void;
   onContentChange: (sectionId: string, content: Record<string, unknown>) => void;
   onExport: () => void;
@@ -53,6 +56,9 @@ export function WorkspaceView({
   onSelectSection,
   onToggleSidebar,
   onTogglePromptPanel,
+  onRenameSection,
+  onAddSection,
+  onDeleteSection,
   onGenerate,
   onContentChange,
   onExport,
@@ -130,6 +136,9 @@ export function WorkspaceView({
               activeSectionId={activeSectionId}
               onSelectSection={onSelectSection}
               onToggle={onToggleSidebar}
+              onRenameSection={onRenameSection}
+              onAddSection={onAddSection}
+              onDeleteSection={onDeleteSection}
             />
           )}
           {isPromptPanelOpen && (

@@ -25,7 +25,7 @@ export function useWorkspace() {
   const router = useRouter()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const { thesis, isLoading: thesisLoading } = useThesis()
-  const { sections, isLoading: sectionsLoading, updateSectionContent, refetch: refetchSections } = useSections(thesis?.id)
+  const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const { exportDocx, isExporting } = useExport()
   const {
@@ -129,5 +129,8 @@ export function useWorkspace() {
     onToggleSearch: toggleSearch,
     onDeleteReference: deleteReference,
     isExporting,
+    onRenameSection: renameSection,
+    onAddSection: addSection,
+    onDeleteSection: deleteSection,
   }
 }

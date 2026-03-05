@@ -151,16 +151,20 @@ function SectionBlock({
           />
         )}
       </div>
-      {section.children.map((child) => (
-        <SectionBlock
-          key={child.id}
-          section={child}
-          activeSectionId={activeSectionId}
-          isGenerating={isGenerating}
-          onContentChange={onContentChange}
-          onClickSection={onClickSection}
-        />
-      ))}
+      {section.children.length > 0 && (
+        <div className='ml-4 pl-3 border-l border-border/30'>
+          {section.children.map((child) => (
+            <SectionBlock
+              key={child.id}
+              section={child}
+              activeSectionId={activeSectionId}
+              isGenerating={isGenerating}
+              onContentChange={onContentChange}
+              onClickSection={onClickSection}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
