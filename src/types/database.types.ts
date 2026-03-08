@@ -59,18 +59,21 @@ export type Database = {
           id: string
           plan: Database["public"]["Enums"]["plan"]
           word_count: number
+          word_count_reset_at: string | null
         }
         Insert: {
           full_name?: string | null
           id: string
           plan?: Database["public"]["Enums"]["plan"]
           word_count?: number
+          word_count_reset_at?: string | null
         }
         Update: {
           full_name?: string | null
           id?: string
           plan?: Database["public"]["Enums"]["plan"]
           word_count?: number
+          word_count_reset_at?: string | null
         }
         Relationships: []
       }
