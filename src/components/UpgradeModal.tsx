@@ -5,12 +5,12 @@ import { X, Zap, MessageCircle } from 'lucide-react'
 const WA_PHONE = '6282245101283'
 
 const MESSAGES = {
-  words: 'Halo, saya ingin upgrade ke Plan Pro SkripsiAI karena sudah mencapai batas 3.000 kata bulanan.',
+  words: 'Halo, saya ingin upgrade ke Plan Pro SkripsiAI karena sudah mencapai batas 5.000 kata bulanan.',
   exports: 'Halo, saya ingin upgrade ke Plan Pro SkripsiAI karena sudah mencapai batas 3x export bulanan.',
 }
 
 const DESCRIPTIONS = {
-  words: 'Kamu sudah mencapai batas 3.000 kata AI per bulan pada paket Gratis.',
+  words: 'Kamu sudah mencapai batas 5.000 kata AI per bulan pada paket Gratis.',
   exports: 'Kamu sudah mencapai batas 3x export .docx per bulan pada paket Gratis.',
 }
 

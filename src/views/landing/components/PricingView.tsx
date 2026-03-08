@@ -16,7 +16,7 @@ const plans = [
     ctaExternal: false,
     ctaVariant: 'outline' as const,
     features: [
-      'Batas 3.000 kata per bulan',
+      'Batas 5.000 kata per bulan',
       'Batas 3x export .docx',
       'Struktur skripsi standar',
       'AI writing assistant',
