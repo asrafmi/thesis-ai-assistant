@@ -2,11 +2,13 @@
 
 import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User } from 'lucide-react';
 import type { SectionTree, Thesis, Reference } from '@/types/thesis.types';
+import type { UsageData } from '@/lib/limits';
 import { SidebarView } from './SidebarView';
 import { PromptPanelView } from './PromptPanelView';
 import { EditorView } from './EditorView';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ExportPreviewModal } from '@/components/ExportPreviewModal';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +47,10 @@ interface WorkspaceViewProps {
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
   onLogout: () => void;
+  usage: UsageData | null;
+  isUpgradeOpen: boolean;
+  upgradeReason: 'words' | 'exports';
+  onCloseUpgrade: () => void;
 }
 
 export function WorkspaceView({
@@ -77,6 +83,10 @@ export function WorkspaceView({
   onToggleSearch,
   onDeleteReference,
   onLogout,
+  usage,
+  isUpgradeOpen,
+  upgradeReason,
+  onCloseUpgrade,
 }: WorkspaceViewProps) {
   return (
     <div className='flex h-screen flex-col bg-background text-foreground'>
@@ -182,6 +192,7 @@ export function WorkspaceView({
               isSearching={isSearching}
               isSearchEnabled={isSearchEnabled}
               searchError={searchError}
+              usage={usage}
               onGenerate={onGenerate}
               onToggle={onTogglePromptPanel}
               onToggleSearch={onToggleSearch}
@@ -205,6 +216,12 @@ export function WorkspaceView({
         isExporting={isExporting}
         onClose={onClosePreview}
         onExport={onExport}
+      />
+
+      <UpgradeModal
+        isOpen={isUpgradeOpen}
+        reason={upgradeReason}
+        onClose={onCloseUpgrade}
       />
     </div>
   );

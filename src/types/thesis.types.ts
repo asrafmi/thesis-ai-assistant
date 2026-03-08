@@ -10,6 +10,7 @@ export interface Profile {
   full_name: string | null
   plan: Plan
   word_count: number
+  word_count_reset_at: string | null
 }
 
 export interface Thesis {

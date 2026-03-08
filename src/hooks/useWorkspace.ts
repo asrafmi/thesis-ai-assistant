@@ -12,6 +12,7 @@ import { useAI } from './useAI'
 import { useExport } from './useExport'
 import { useReferences } from './useReferences'
 import { useAuth } from './useAuth'
+import { useUsage } from './useUsage'
 
 function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
   for (const section of sections) {
@@ -26,11 +27,16 @@ export function useWorkspace() {
   const router = useRouter()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
+  const [upgradeModal, setUpgradeModal] = useState<{ isOpen: boolean; reason: 'words' | 'exports' }>({
+    isOpen: false,
+    reason: 'words',
+  })
   const { thesis, isLoading: thesisLoading } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const { logout } = useAuth()
   const { exportDocx, isExporting } = useExport()
+  const { usage, refetchUsage } = useUsage()
   const {
     references,
     isSearching,
@@ -58,6 +64,12 @@ export function useWorkspace() {
   const handleGenerate = useCallback(
     async (prompt: string) => {
       if (!activeSectionId || !thesis) return
+
+      // Block and show upgrade modal if free word limit reached
+      if (usage?.plan === 'free' && usage.wordCount >= usage.wordLimit) {
+        setUpgradeModal({ isOpen: true, reason: 'words' })
+        return
+      }
       const activeSection = findSectionById(sections, activeSectionId)
       if (!activeSection) return
 
@@ -107,6 +119,9 @@ export function useWorkspace() {
           })
         }
       }
+
+      // 4. Refresh usage counter
+      refetchUsage()
     },
     [
       activeSectionId,
@@ -119,6 +134,8 @@ export function useWorkspace() {
       updateSectionContent,
       searchAndAdd,
       setStreamingContent,
+      refetchUsage,
+      usage,
     ],
   )
 
@@ -143,7 +160,14 @@ export function useWorkspace() {
     isPreviewOpen,
     onOpenPreview: () => setIsPreviewOpen(true),
     onClosePreview: () => setIsPreviewOpen(false),
-    onExport: () => exportDocx(thesis?.title ?? 'skripsi'),
+    onExport: async () => {
+      if (usage?.plan === 'free' && (usage.exportCount ?? 0) >= usage.exportLimit) {
+        setUpgradeModal({ isOpen: true, reason: 'exports' })
+        return
+      }
+      await exportDocx(thesis?.title ?? 'skripsi')
+      refetchUsage()
+    },
     onToggleSearch: toggleSearch,
     onDeleteReference: deleteReference,
     isExporting,
@@ -152,5 +176,9 @@ export function useWorkspace() {
     onDeleteSection: deleteSection,
     streamingContent,
     onLogout: logout,
+    usage,
+    isUpgradeOpen: upgradeModal.isOpen,
+    upgradeReason: upgradeModal.reason,
+    onCloseUpgrade: () => setUpgradeModal((prev) => ({ ...prev, isOpen: false })),
   }
 }

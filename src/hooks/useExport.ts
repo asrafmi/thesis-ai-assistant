@@ -1,13 +1,16 @@
 // FRAMEWORK LAYER — React/Next.js hooks only. Calls services/actions.
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { exportThesisDocxAction } from '@/actions/export.actions'
 
 export function useExport() {
   const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const inFlightRef = useRef(false)
 
   const exportDocx = useCallback(async (filename: string) => {
+    if (inFlightRef.current) return
+    inFlightRef.current = true
     setIsExporting(true)
     setError(null)
 
@@ -33,6 +36,7 @@ export function useExport() {
     }
 
     setIsExporting(false)
+    inFlightRef.current = false
   }, [])
 
   return { exportDocx, isExporting, error }
