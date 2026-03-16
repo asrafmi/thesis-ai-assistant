@@ -1,10 +1,6 @@
 'use server'
 
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import { getAnthropicClient } from '@/lib/anthropic'
 
 export async function generateDiagramAction(params: {
   prompt: string
@@ -28,7 +24,7 @@ PENTING:
 - Gunakan bahasa Indonesia untuk label/teks di dalam diagram
 - Untuk flowchart gunakan: flowchart TD atau flowchart LR`
 
-    const message = await anthropic.messages.create({
+    const message = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [{ role: 'user', content: params.prompt }],
