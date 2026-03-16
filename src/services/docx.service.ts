@@ -122,7 +122,7 @@ async function contentToDocxNodes(content: TipTapNode[]): Promise<Paragraph[]> {
     } else if (node.type === 'image') {
       const src = node.attrs?.src as string | undefined
       const width = (node.attrs?.width as number | null) ?? 400
-      const align = (node.attrs?.align as string) ?? 'left'
+      const align = (node.attrs?.align as string) ?? 'center'
       const alignMap: Record<string, (typeof AlignmentType)[keyof typeof AlignmentType]> = {
         left: AlignmentType.LEFT,
         center: AlignmentType.CENTER,

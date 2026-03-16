@@ -105,14 +105,14 @@ function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps)
 
   return (
     <NodeViewWrapper
-      style={{ display: 'flex', justifyContent: justifyMap[align ?? 'left'], width: '100%' }}
+      style={{ display: 'flex', justifyContent: justifyMap[align ?? 'center'], width: '100%' }}
       className="my-2"
       data-drag-handle
     >
       <div className="relative inline-block group">
         {selected && !isResizing && (
           <AlignToolbar
-            align={align ?? 'left'}
+            align={align ?? 'center'}
             onChange={(a) => updateAttributes({ align: a })}
           />
         )}
@@ -191,9 +191,9 @@ export const ResizableImage = Node.create({
         renderHTML: (attrs) => attrs.width ? { 'data-width': attrs.width } : {},
       },
       align: {
-        default: 'left',
-        parseHTML: (el) => el.getAttribute('data-align') ?? 'left',
-        renderHTML: (attrs) => ({ 'data-align': attrs.align ?? 'left' }),
+        default: 'center',
+        parseHTML: (el) => el.getAttribute('data-align') ?? 'center',
+        renderHTML: (attrs) => ({ 'data-align': attrs.align ?? 'center' }),
       },
     }
   },

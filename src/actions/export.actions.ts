@@ -54,11 +54,6 @@ export async function exportThesisDocxAction(): Promise<{ data?: string; error?:
   if (sectionsError) return { error: sectionsError.message }
 
   const tree = buildSectionTree(sections as unknown as Section[])
-  const allContent = JSON.stringify(tree)
-  console.log('[export] has image:', allContent.includes('"image"'))
-  console.log('[export] image nodes:', allContent.match(/"type":"image"/g)?.length ?? 0)
-  const imgNodeMatch = allContent.match(/"type":"image","attrs":\{[^}]*\}/)
-  console.log('[export] first image node:', imgNodeMatch?.[0]?.slice(0, 150))
   const base64 = await buildDocxFromThesis(thesis, tree)
 
   // Record the export

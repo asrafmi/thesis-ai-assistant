@@ -162,11 +162,11 @@ function SectionBlock({
           </div>
         ) : (
           <TipTapEditor
+            key={section.id}
             content={section.content}
             isActive={isActive}
             onChange={(content) => onContentChange(section.id, content)}
             sectionTitle={section.title}
-            sectionId={section.id}
           />
         )}
       </div>

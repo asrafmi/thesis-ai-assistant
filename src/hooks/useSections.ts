@@ -40,7 +40,7 @@ export function useSections(thesisId?: string) {
     pendingSaveRef.current = { sectionId, content }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      updateSectionContentAction(sectionId, content)
+      updateSectionContentAction(sectionId, JSON.stringify(content))
       pendingSaveRef.current = null
     }, 2000)
   }
@@ -50,7 +50,7 @@ export function useSections(thesisId?: string) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     const { sectionId, content } = pendingSaveRef.current
     pendingSaveRef.current = null
-    await updateSectionContentAction(sectionId, content)
+    await updateSectionContentAction(sectionId, JSON.stringify(content))
   }
 
   async function renameSection(sectionId: string, title: string) {

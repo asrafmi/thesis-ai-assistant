@@ -5,30 +5,18 @@ import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { ResizableImage } from '@/components/ResizableImageExtension'
 import { ImageIcon, Workflow } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { DiagramGeneratorModal } from '@/components/DiagramGeneratorModal'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { updateSectionContentAction } from '@/actions/section.actions'
+import { uploadFileToStorage, uploadDataUrlToStorage } from '@/services/image.service'
 
 interface TipTapEditorProps {
   content: Record<string, unknown> | null
   isActive: boolean
   onChange: (content: Record<string, unknown>) => void
   sectionTitle?: string
-  sectionId?: string
 }
 
 const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] }
-
-async function uploadImageToStorage(file: File): Promise<string | null> {
-  const supabase = createClient()
-  const ext = file.name.split('.').pop() ?? 'png'
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-  const { error } = await supabase.storage.from('thesis-images').upload(path, file)
-  if (error) return null
-  const { data } = supabase.storage.from('thesis-images').getPublicUrl(path)
-  return data.publicUrl
-}
 
 function ToolbarButton({
   onClick,
@@ -143,36 +131,22 @@ function Toolbar({
   )
 }
 
-export function TipTapEditor({ content, isActive, onChange, sectionTitle, sectionId }: TipTapEditorProps) {
+export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipTapEditorProps) {
   const editorRef = useRef<Editor | null>(null)
-  const localChangeCount = useRef(0)
   const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
   const handleImageFile = useCallback(async (file: File) => {
-    const url = await uploadImageToStorage(file)
+    const url = await uploadFileToStorage(file)
     if (url && editorRef.current) {
-      editorRef.current.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400 } }).run()
+      editorRef.current.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center' } }).run()
     }
   }, [])
 
   const handleInsertDiagram = useCallback(async (dataUrl: string) => {
-    const res = await fetch(dataUrl)
-    const blob = await res.blob()
-    const file = new File([blob], `diagram-${Date.now()}.png`, { type: 'image/png' })
-    const supabase = createClient()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.png`
-    const { error } = await supabase.storage.from('thesis-images').upload(path, file)
-    if (error) return
-    const { data } = supabase.storage.from('thesis-images').getPublicUrl(path)
-    editorRef.current?.chain().focus().insertContent({ type: 'image', attrs: { src: data.publicUrl, width: 400, align: 'center' } }).run()
-    // Force immediate save — bypass debounce since image URL must persist
-    if (sectionId) {
-      setTimeout(() => {
-        const json = editorRef.current?.getJSON()
-        if (json) updateSectionContentAction(sectionId, json as Record<string, unknown>)
-      }, 100)
-    }
-  }, [sectionId])
+    const url = await uploadDataUrlToStorage(dataUrl)
+    if (!url) return
+    editorRef.current?.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center' } }).run()
+  }, [])
 
   const editor = useEditor({
     extensions: [
@@ -183,7 +157,6 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle, sectio
     editable: isActive,
     immediatelyRender: false,
     onUpdate({ editor }) {
-      localChangeCount.current += 1
       onChange(editor.getJSON() as Record<string,unknown>)
     },
     editorProps: {
@@ -221,18 +194,6 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle, sectio
     editor?.setEditable(isActive)
   }, [isActive, editor])
 
-  useEffect(() => {
-    if (!editor || !content) return
-    if (localChangeCount.current > 0) {
-      localChangeCount.current -= 1
-      return
-    }
-    const current = JSON.stringify(editor.getJSON())
-    const incoming = JSON.stringify(content)
-    if (current !== incoming) {
-      editor.commands.setContent(content)
-    }
-  }, [content, editor])
 
   return (
     <div>
