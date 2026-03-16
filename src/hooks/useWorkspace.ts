@@ -34,7 +34,7 @@ export function useWorkspace() {
     reason: 'words',
   })
   const { thesis, isLoading: thesisLoading } = useThesis()
-  const { sections, isLoading: sectionsLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
+  const { sections, isLoading: sectionsLoading, updateSectionContent, flushPendingSave, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const { logout } = useAuth()
   const { exportDocx, isExporting } = useExport()
@@ -161,13 +161,17 @@ export function useWorkspace() {
     onGenerate: handleGenerate,
     onContentChange: updateSectionContent,
     isPreviewOpen,
-    onOpenPreview: () => setIsPreviewOpen(true),
+    onOpenPreview: async () => {
+      await flushPendingSave()
+      setIsPreviewOpen(true)
+    },
     onClosePreview: () => setIsPreviewOpen(false),
     onExport: async () => {
       if (usage?.plan === 'free' && (usage.exportCount ?? 0) >= usage.exportLimit) {
         setUpgradeModal({ isOpen: true, reason: 'exports' })
         return
       }
+      await flushPendingSave()
       await exportDocx(thesis?.title ?? 'skripsi')
       refetchUsage()
     },

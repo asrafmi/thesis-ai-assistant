@@ -2,12 +2,12 @@
 
 import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { ResizableImage } from '@/components/ResizableImageExtension'
 import { ImageIcon, Workflow } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { DiagramGeneratorModal } from '@/components/DiagramGeneratorModal'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { uploadFileToStorage, uploadDataUrlToStorage } from '@/services/image.service'
 
 interface TipTapEditorProps {
   content: Record<string, unknown> | null
@@ -17,16 +17,6 @@ interface TipTapEditorProps {
 }
 
 const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] }
-
-async function uploadImageToStorage(file: File): Promise<string | null> {
-  const supabase = createClient()
-  const ext = file.name.split('.').pop() ?? 'png'
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-  const { error } = await supabase.storage.from('thesis-images').upload(path, file)
-  if (error) return null
-  const { data } = supabase.storage.from('thesis-images').getPublicUrl(path)
-  return data.publicUrl
-}
 
 function ToolbarButton({
   onClick,
@@ -146,26 +136,28 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
   const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
   const handleImageFile = useCallback(async (file: File) => {
-    const url = await uploadImageToStorage(file)
+    const url = await uploadFileToStorage(file)
     if (url && editorRef.current) {
-      editorRef.current.chain().focus().setImage({ src: url }).run()
+      editorRef.current.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center' } }).run()
     }
   }, [])
 
-  const handleInsertDiagram = useCallback((svgDataUrl: string) => {
-    editorRef.current?.chain().focus().setImage({ src: svgDataUrl }).run()
+  const handleInsertDiagram = useCallback(async (dataUrl: string) => {
+    const url = await uploadDataUrlToStorage(dataUrl)
+    if (!url) return
+    editorRef.current?.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center' } }).run()
   }, [])
 
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Image.configure({ inline: false, HTMLAttributes: { class: 'max-w-full rounded my-2' } }),
+      ResizableImage,
     ],
     content: content ?? EMPTY_DOC,
     editable: isActive,
     immediatelyRender: false,
     onUpdate({ editor }) {
-      onChange(editor.getJSON() as Record<string, unknown>)
+      onChange(editor.getJSON() as Record<string,unknown>)
     },
     editorProps: {
       attributes: {
@@ -202,14 +194,6 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
     editor?.setEditable(isActive)
   }, [isActive, editor])
 
-  useEffect(() => {
-    if (!editor || !content) return
-    const current = JSON.stringify(editor.getJSON())
-    const incoming = JSON.stringify(content)
-    if (current !== incoming) {
-      editor.commands.setContent(content)
-    }
-  }, [content, editor])
 
   return (
     <div>
