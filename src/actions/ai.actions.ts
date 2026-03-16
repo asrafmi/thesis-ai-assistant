@@ -2,13 +2,9 @@
 
 // SERVER ACTIONS — Anthropic API calls only. No React hooks, no JSX.
 
-import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropicClient } from '@/lib/anthropic'
 import { buildThesisPrompt } from '@/services/ai.service'
 import type { Reference } from '@/types/thesis.types'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 export async function generateSectionContentAction(params: {
   prompt: string
@@ -20,7 +16,7 @@ export async function generateSectionContentAction(params: {
   try {
     const systemPrompt = buildThesisPrompt(params)
 
-    const message = await anthropic.messages.create({
+    const message = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{ role: 'user', content: systemPrompt }],

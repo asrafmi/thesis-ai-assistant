@@ -57,6 +57,7 @@ export type Database = {
         Row: {
           full_name: string | null
           id: string
+          nim: string | null
           plan: Database["public"]["Enums"]["plan"]
           word_count: number
           word_count_reset_at: string | null
@@ -64,6 +65,7 @@ export type Database = {
         Insert: {
           full_name?: string | null
           id: string
+          nim?: string | null
           plan?: Database["public"]["Enums"]["plan"]
           word_count?: number
           word_count_reset_at?: string | null
@@ -71,6 +73,7 @@ export type Database = {
         Update: {
           full_name?: string | null
           id?: string
+          nim?: string | null
           plan?: Database["public"]["Enums"]["plan"]
           word_count?: number
           word_count_reset_at?: string | null
@@ -165,6 +168,7 @@ export type Database = {
           created_at: string
           faculty: string | null
           id: string
+          reference_style: Database["public"]["Enums"]["reference_style"]
           status: Database["public"]["Enums"]["thesis_status"]
           supervisor: string | null
           template_type: Database["public"]["Enums"]["template_type"]
@@ -178,6 +182,7 @@ export type Database = {
           created_at?: string
           faculty?: string | null
           id?: string
+          reference_style?: Database["public"]["Enums"]["reference_style"]
           status?: Database["public"]["Enums"]["thesis_status"]
           supervisor?: string | null
           template_type?: Database["public"]["Enums"]["template_type"]
@@ -191,6 +196,7 @@ export type Database = {
           created_at?: string
           faculty?: string | null
           id?: string
+          reference_style?: Database["public"]["Enums"]["reference_style"]
           status?: Database["public"]["Enums"]["thesis_status"]
           supervisor?: string | null
           template_type?: Database["public"]["Enums"]["template_type"]
@@ -275,6 +281,7 @@ export type Database = {
     }
     Enums: {
       plan: "free" | "pro"
+      reference_style: "apa" | "ieee" | "mendeley"
       revision_source: "ai" | "user"
       template_type: "quantitative" | "qualitative"
       thesis_status: "draft" | "complete"
@@ -406,6 +413,7 @@ export const Constants = {
   public: {
     Enums: {
       plan: ["free", "pro"],
+      reference_style: ["apa", "ieee", "mendeley"],
       revision_source: ["ai", "user"],
       template_type: ["quantitative", "qualitative"],
       thesis_status: ["draft", "complete"],

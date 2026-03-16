@@ -3,10 +3,13 @@
 // PRESENTATION LAYER — pure JSX only. No hooks, no business logic.
 
 import { useEffect } from 'react';
-import type { SectionTree } from '@/types/thesis.types';
+import { GraduationCap } from 'lucide-react';
+import type { SectionTree, Thesis, Profile } from '@/types/thesis.types';
 import { TipTapEditor } from './TipTapEditor';
 
 interface EditorViewProps {
+  thesis: Thesis | null;
+  profile: Profile | null;
   sections: SectionTree[];
   activeSectionId: string | null;
   streamingContent: Record<string, string>;
@@ -15,6 +18,45 @@ interface EditorViewProps {
     content: Record<string, unknown>,
   ) => void;
   onSelectSection: (id: string) => void;
+}
+
+function CoverPage({ thesis, profile }: { thesis: Thesis | null; profile: Profile | null }) {
+  return (
+    <div className='flex flex-col items-center text-center py-10 mb-2 border border-border/40 rounded-lg bg-card/40 gap-3'>
+      {/* University logo placeholder */}
+      <div className='flex items-center justify-center w-20 h-20 rounded-full border-2 border-border bg-muted/50'>
+        <GraduationCap size={36} className='text-muted-foreground/50' />
+      </div>
+
+      <div className='space-y-1'>
+        <p className='text-xs uppercase tracking-widest text-muted-foreground'>
+          {thesis?.university ?? '—'}
+        </p>
+        <p className='text-xs text-muted-foreground/70'>{thesis?.faculty ?? ''}</p>
+      </div>
+
+      <div className='w-16 border-t border-border/50' />
+
+      <div className='max-w-sm space-y-1 px-4'>
+        <p className='text-xs uppercase tracking-widest text-muted-foreground/60'>Skripsi</p>
+        <h1 className='text-base font-bold text-foreground leading-snug'>
+          {thesis?.title ?? 'Judul Skripsi'}
+        </h1>
+      </div>
+
+      <div className='w-16 border-t border-border/50' />
+
+      <div className='space-y-0.5'>
+        <p className='text-sm font-medium text-foreground'>{profile?.full_name ?? '—'}</p>
+        <p className='text-xs text-muted-foreground'>{profile?.nim ?? 'NIM'}</p>
+      </div>
+
+      <div className='space-y-0.5 text-xs text-muted-foreground/70'>
+        {thesis?.supervisor && <p>Pembimbing: {thesis.supervisor}</p>}
+        {thesis?.year && <p>{thesis.year}</p>}
+      </div>
+    </div>
+  );
 }
 
 const HEADING_STYLES: Record<number, string> = {
@@ -120,9 +162,11 @@ function SectionBlock({
           </div>
         ) : (
           <TipTapEditor
+            key={section.id}
             content={section.content}
             isActive={isActive}
             onChange={(content) => onContentChange(section.id, content)}
+            sectionTitle={section.title}
           />
         )}
       </div>
@@ -145,6 +189,8 @@ function SectionBlock({
 }
 
 export function EditorView({
+  thesis,
+  profile,
   sections,
   activeSectionId,
   streamingContent,
@@ -168,6 +214,7 @@ export function EditorView({
   return (
     <div className='flex-1 overflow-auto bg-background'>
       <div className='max-w-3xl mx-auto px-12 py-10 pb-32'>
+        <CoverPage thesis={thesis} profile={profile} />
         <DaftarIsiSection sections={sections} />
         {sections.map((section) => (
           <SectionBlock

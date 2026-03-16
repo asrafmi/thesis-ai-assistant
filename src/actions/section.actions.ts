@@ -73,8 +73,9 @@ export async function getSectionsAction(thesisId: string): Promise<{ data?: Sect
 
 export async function updateSectionContentAction(
   sectionId: string,
-  content: Record<string, unknown>,
+  contentJson: string,
 ): Promise<{ error?: string }> {
+  const content = JSON.parse(contentJson)
   const supabase = await createClient()
 
   const { error } = await supabase

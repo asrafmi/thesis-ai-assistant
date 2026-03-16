@@ -5,7 +5,11 @@
       "Bash(npx shadcn@latest add dialog alert-dialog --yes)",
       "Bash(npm install axios)",
       "Bash(pnpm add axios)",
-      "Bash(curl -s --request GET --url 'https://use.api.co.id/regional/indonesia/universities?page=1&name=binus' --header 'accept: application/json' --header 'x-api-co-id: lJrw5PYDVOxqSnSqLzPcJGKYZzGR9XxLjoyYQ9jZWmOBz6HnHm')"
+      "Bash(curl -s --request GET --url 'https://use.api.co.id/regional/indonesia/universities?page=1&name=binus' --header 'accept: application/json' --header 'x-api-co-id: lJrw5PYDVOxqSnSqLzPcJGKYZzGR9XxLjoyYQ9jZWmOBz6HnHm')",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(node -e \"const sharp = require\\(''sharp''\\); sharp\\(Buffer.from\\(''<svg xmlns=\"\"http://www.w3.org/2000/svg\"\" width=\"\"100\"\" height=\"\"100\"\"><rect width=\"\"100\"\" height=\"\"100\"\" fill=\"\"red\"\"/></svg>''\\)\\).png\\(\\).toBuffer\\(\\).then\\(b => console.log\\(''SVG works, size:'', b.length\\)\\).catch\\(e => console.log\\(''SVG error:'', e.message\\)\\)\")"
     ]
   }
 }

@@ -17,6 +17,7 @@ interface OnboardingFormData {
   supervisor: string
   year: number
   template_type: TemplateType
+  nim: string
 }
 
 interface OnboardingViewProps {
@@ -193,6 +194,7 @@ export function OnboardingView({ onSubmit, isLoading, error }: OnboardingViewPro
   const [formData, setFormData] = useState<Partial<OnboardingFormData>>({
     year: new Date().getFullYear(),
     template_type: 'quantitative',
+    nim: '',
   })
   // null = failed to load, undefined = not yet attempted, object = loaded
   const [lottieData, setLottieData] = useState<Record<number, object | null>>({})
@@ -390,13 +392,24 @@ export function OnboardingView({ onSubmit, isLoading, error }: OnboardingViewPro
                 </div>
               )}
 
-              {/* Step 3 — Supervisor + Year */}
+              {/* Step 3 — Supervisor + Year + NIM */}
               {currentStep === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <label className={labelCls}>Dosen Pembimbing</label>
+                    <label className={labelCls}>NIM</label>
                     <input
                       autoFocus
+                      type="text"
+                      value={formData.nim ?? ''}
+                      onChange={(e) => set('nim', e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && goNext()}
+                      placeholder="2021001234"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Dosen Pembimbing</label>
+                    <input
                       type="text"
                       value={formData.supervisor ?? ''}
                       onChange={(e) => set('supervisor', e.target.value)}

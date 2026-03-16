@@ -24,6 +24,7 @@ export function useSections(thesisId?: string) {
   const [sections, setSections] = useState<SectionTree[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingSaveRef = useRef<{ sectionId: string; content: Record<string, unknown> } | null>(null)
 
   useEffect(() => {
     if (!thesisId) return
@@ -36,10 +37,20 @@ export function useSections(thesisId?: string) {
 
   function updateSectionContent(sectionId: string, content: Record<string, unknown>) {
     setSections((prev) => updateSectionContentInTree(prev, sectionId, content))
+    pendingSaveRef.current = { sectionId, content }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      updateSectionContentAction(sectionId, content)
+      updateSectionContentAction(sectionId, JSON.stringify(content))
+      pendingSaveRef.current = null
     }, 2000)
+  }
+
+  async function flushPendingSave() {
+    if (!pendingSaveRef.current) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    const { sectionId, content } = pendingSaveRef.current
+    pendingSaveRef.current = null
+    await updateSectionContentAction(sectionId, JSON.stringify(content))
   }
 
   async function renameSection(sectionId: string, title: string) {
@@ -86,5 +97,5 @@ export function useSections(thesisId?: string) {
     if (result.data) setSections(result.data)
   }
 
-  return { sections, isLoading, updateSectionContent, renameSection, addSection, deleteSection, refetch }
+  return { sections, isLoading, updateSectionContent, flushPendingSave, renameSection, addSection, deleteSection, refetch }
 }

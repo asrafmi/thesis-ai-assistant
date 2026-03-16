@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropicClient } from '@/lib/anthropic'
 import { createClient } from '@/lib/supabase/server'
 import { buildThesisPrompt } from '@/services/ai.service'
 import { WORD_LIMIT_FREE } from '@/lib/limits'
 import type { Reference } from '@/types/thesis.types'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const anthropic = getAnthropicClient()
 
 function isSameMonth(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
