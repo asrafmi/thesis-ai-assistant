@@ -248,3 +248,4 @@ Login ──────→ (ada thesis?) ──→ /workspace
 - No refactor unrelated files
 - Keep components small
 - Use existing folder structure
+- Use pnpm instead of npm or yarn

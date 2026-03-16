@@ -1,4 +1,4 @@
-import { BookOpen, Sparkles, Eye, FileDown } from 'lucide-react'
+import { BookOpen, Sparkles, Eye, FileDown, Workflow } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const features = [
@@ -25,6 +25,12 @@ const features = [
     title: 'Export Siap Kumpul',
     description:
       'Export ke .docx dengan heading aktif, daftar isi otomatis, dan nomor halaman yang benar. Minim penyesuaian manual.',
+  },
+  {
+    icon: Workflow,
+    title: 'AI Diagram Generator',
+    description:
+      'Deskripsikan diagram yang kamu inginkan, AI langsung generate diagram alir, bagan, atau flowchart siap sisip ke dokumen skripsi.',
   },
 ]
 
@@ -62,7 +68,7 @@ export function FeaturesView() {
 
         {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
