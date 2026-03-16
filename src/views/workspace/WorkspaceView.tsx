@@ -1,7 +1,7 @@
 // PRESENTATION LAYER. pure JSX only. No hooks, no business logic.
 
 import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User } from 'lucide-react';
-import type { SectionTree, Thesis, Reference } from '@/types/thesis.types';
+import type { SectionTree, Thesis, Profile, Reference, ReferenceStyle } from '@/types/thesis.types';
 import type { UsageData } from '@/lib/limits';
 import { SidebarView } from './SidebarView';
 import { PromptPanelView } from './PromptPanelView';
@@ -19,6 +19,7 @@ import {
 
 interface WorkspaceViewProps {
   thesis: Thesis | null;
+  profile: Profile | null;
   sections: SectionTree[];
   activeSectionId: string | null;
   isSidebarOpen: boolean;
@@ -46,6 +47,7 @@ interface WorkspaceViewProps {
   onClosePreview: () => void;
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
+  onChangeReferenceStyle: (style: ReferenceStyle) => void;
   onLogout: () => void;
   usage: UsageData | null;
   isUpgradeOpen: boolean;
@@ -55,6 +57,7 @@ interface WorkspaceViewProps {
 
 export function WorkspaceView({
   thesis,
+  profile,
   sections,
   activeSectionId,
   isSidebarOpen,
@@ -82,6 +85,7 @@ export function WorkspaceView({
   onClosePreview,
   onToggleSearch,
   onDeleteReference,
+  onChangeReferenceStyle,
   onLogout,
   usage,
   isUpgradeOpen,
@@ -89,10 +93,11 @@ export function WorkspaceView({
   onCloseUpgrade,
 }: WorkspaceViewProps) {
   return (
-    <div className='flex h-screen flex-col bg-background text-foreground'>
+    <div className='flex h-dvh flex-col bg-background text-foreground'>
       {/* Header */}
       <header className='flex items-center justify-between px-4 h-12 border-b border-border shrink-0'>
-        <div className='flex items-center gap-3'>
+        {/* Left: panel toggles (desktop only) */}
+        <div className='hidden md:flex items-center gap-3'>
           {!isSidebarOpen && (
             <button
               onClick={onToggleSidebar}
@@ -115,15 +120,17 @@ export function WorkspaceView({
           )}
         </div>
 
-        <span className='text-sm text-muted-foreground font-medium truncate max-w-sm'>
+        {/* Title */}
+        <span className='text-sm text-muted-foreground font-medium truncate max-w-40 md:max-w-sm'>
           {thesis?.title ?? 'Workspace'}
         </span>
 
-        <div className='flex items-center gap-3'>
+        {/* Right */}
+        <div className='flex items-center gap-2 md:gap-3'>
           {isGenerating && (
-            <span className='text-xs text-primary animate-pulse'>Generating...</span>
+            <span className='hidden md:inline text-xs text-primary animate-pulse'>Generating...</span>
           )}
-          <div className='flex items-center gap-1 text-xs text-muted-foreground/70'>
+          <div className='hidden md:flex items-center gap-1 text-xs text-muted-foreground/70'>
             <Save size={11} />
             <span>Autosave</span>
           </div>
@@ -139,7 +146,7 @@ export function WorkspaceView({
             ) : (
               <Eye size={11} />
             )}
-            {isExporting ? 'Exporting...' : 'Preview & Export'}
+            <span className='hidden sm:inline'>{isExporting ? 'Exporting...' : 'Preview & Export'}</span>
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -171,35 +178,61 @@ export function WorkspaceView({
           Memuat skripsi...
         </div>
       ) : (
-        <div className='flex flex-1 overflow-hidden'>
+        <div className='flex flex-1 overflow-hidden relative'>
+          {/* Sidebar — desktop: static panel | mobile: overlay drawer */}
           {isSidebarOpen && (
-            <SidebarView
-              sections={sections}
-              activeSectionId={activeSectionId}
-              onSelectSection={onSelectSection}
-              onToggle={onToggleSidebar}
-              onRenameSection={onRenameSection}
-              onAddSection={onAddSection}
-              onDeleteSection={onDeleteSection}
-            />
+            <>
+              {/* Mobile backdrop */}
+              <div
+                className='md:hidden fixed inset-0 z-20 bg-black/50'
+                onClick={onToggleSidebar}
+              />
+              <div className='fixed md:static inset-y-0 left-0 z-30 md:z-auto top-12 md:top-auto h-[calc(100dvh-3rem)] md:h-full'>
+                <SidebarView
+                  sections={sections}
+                  activeSectionId={activeSectionId}
+                  onSelectSection={(id) => { onSelectSection(id); if (window.innerWidth < 768) onToggleSidebar(); }}
+                  onToggle={onToggleSidebar}
+                  onRenameSection={onRenameSection}
+                  onAddSection={onAddSection}
+                  onDeleteSection={onDeleteSection}
+                />
+              </div>
+            </>
           )}
+
+          {/* Prompt panel — desktop: static panel | mobile: overlay drawer from right */}
           {isPromptPanelOpen && (
-            <PromptPanelView
-              activeSectionId={activeSectionId}
-              promptHistory={promptHistory}
-              isGenerating={isGenerating}
-              references={references}
-              isSearching={isSearching}
-              isSearchEnabled={isSearchEnabled}
-              searchError={searchError}
-              usage={usage}
-              onGenerate={onGenerate}
-              onToggle={onTogglePromptPanel}
-              onToggleSearch={onToggleSearch}
-              onDeleteReference={onDeleteReference}
-            />
+            <>
+              {/* Mobile backdrop */}
+              <div
+                className='md:hidden fixed inset-0 z-20 bg-black/50'
+                onClick={onTogglePromptPanel}
+              />
+              <div className='fixed md:static inset-y-0 right-0 z-30 md:z-auto top-12 md:top-auto h-[calc(100dvh-3rem)] md:h-full'>
+                <PromptPanelView
+                  activeSectionId={activeSectionId}
+                  promptHistory={promptHistory}
+                  isGenerating={isGenerating}
+                  references={references}
+                  isSearching={isSearching}
+                  isSearchEnabled={isSearchEnabled}
+                  searchError={searchError}
+                  usage={usage}
+                  referenceStyle={thesis?.reference_style ?? 'apa'}
+                  onGenerate={onGenerate}
+                  onToggle={onTogglePromptPanel}
+                  onToggleSearch={onToggleSearch}
+                  onDeleteReference={onDeleteReference}
+                  onChangeReferenceStyle={onChangeReferenceStyle}
+                />
+              </div>
+            </>
           )}
+
           <EditorView
+            thesis={thesis}
+            profile={profile}
             sections={sections}
             activeSectionId={activeSectionId}
             streamingContent={streamingContent}
@@ -208,6 +241,30 @@ export function WorkspaceView({
           />
         </div>
       )}
+
+      {/* Mobile bottom bar */}
+      <nav className='md:hidden flex items-center justify-around border-t border-border bg-background px-4 py-2 shrink-0'>
+        <button
+          type='button'
+          onClick={onToggleSidebar}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-md transition-colors ${isSidebarOpen ? 'text-primary' : 'text-muted-foreground'}`}
+        >
+          <BookOpen size={18} />
+          <span className='text-[10px]'>Struktur</span>
+        </button>
+        <button
+          type='button'
+          onClick={onTogglePromptPanel}
+          className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-md transition-colors ${isPromptPanelOpen ? 'text-primary' : 'text-muted-foreground'}`}
+        >
+          {isGenerating ? <Loader2 size={18} className='animate-spin' /> : <Sparkles size={18} />}
+          <span className='text-[10px]'>AI</span>
+        </button>
+        <div className='flex items-center gap-1 text-muted-foreground/60'>
+          <Save size={14} />
+          <span className='text-[10px]'>Autosave</span>
+        </div>
+      </nav>
 
       <ExportPreviewModal
         thesis={thesis}

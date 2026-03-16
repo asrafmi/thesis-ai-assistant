@@ -4,10 +4,12 @@ export type Plan = Enums<'plan'>
 export type TemplateType = Enums<'template_type'>
 export type ThesisStatus = Enums<'thesis_status'>
 export type RevisionSource = Enums<'revision_source'>
+export type ReferenceStyle = Enums<'reference_style'>
 
 export interface Profile {
   id: string
   full_name: string | null
+  nim: string | null
   plan: Plan
   word_count: number
   word_count_reset_at: string | null
@@ -22,6 +24,7 @@ export interface Thesis {
   supervisor: string | null
   year: number | null
   template_type: TemplateType
+  reference_style: ReferenceStyle
   status: ThesisStatus
   created_at: string
   updated_at: string

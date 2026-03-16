@@ -33,6 +33,11 @@ export async function registerAction(
   if (error) return { error: error.message }
   if (!data.user) return { error: 'Gagal membuat akun. Coba lagi.' }
 
+  // Supabase signUp doesn't error on duplicate email — it returns user with empty identities
+  if (!data.user.identities || data.user.identities.length === 0) {
+    return { error: 'Email ini sudah terdaftar. Silakan login.' }
+  }
+
   const { error: profileError } = await supabase.from('profiles').insert({
     id: data.user.id,
     full_name: fullName,

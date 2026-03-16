@@ -102,16 +102,17 @@ export async function deleteReferenceAction(
 export async function updateReferenceSectionAction(thesisId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
 
-  // Fetch all refs
-  const { data: refs, error: refsError } = await supabase
-    .from('thesis_references')
-    .select('*')
-    .eq('thesis_id', thesisId)
-    .order('citation_number')
+  // Fetch all refs and thesis reference_style in parallel
+  const [{ data: refs, error: refsError }, { data: thesis, error: thesisError }] = await Promise.all([
+    supabase.from('thesis_references').select('*').eq('thesis_id', thesisId).order('citation_number'),
+    supabase.from('theses').select('reference_style').eq('id', thesisId).single(),
+  ])
 
   if (refsError) return { error: refsError.message }
+  if (thesisError) return { error: thesisError.message }
 
-  const content = buildReferencesTipTapContent((refs as unknown as Reference[]) ?? [])
+  const style = thesis?.reference_style ?? 'apa'
+  const content = buildReferencesTipTapContent((refs as unknown as Reference[]) ?? [], style)
 
   // Check if DAFTAR PUSTAKA section already exists
   const { data: existing } = await supabase

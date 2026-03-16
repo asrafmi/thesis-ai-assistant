@@ -1,6 +1,6 @@
 // BUSINESS LOGIC LAYER — pure TypeScript functions. No React, no Next.js.
 
-import type { Reference } from '@/types/thesis.types'
+import type { Reference, ReferenceStyle } from '@/types/thesis.types'
 import type { TavilySearchResult } from './web-search.service'
 
 // ─────────────────────────────────────────────────────────────
@@ -115,6 +115,69 @@ export function formatApaReference(ref: Reference): string {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Format IEEE reference string
+// ─────────────────────────────────────────────────────────────
+
+export function formatIeeeReference(ref: Reference): string {
+  const parts: string[] = []
+
+  // Authors (initials + last name)
+  if (ref.authors) {
+    parts.push(`${ref.authors},`)
+  } else {
+    parts.push('Anonim,')
+  }
+
+  // Title in quotes
+  parts.push(`"${ref.title},"`)
+
+  // Journal in italics marker (plain text)
+  if (ref.journal) {
+    let journalPart = `*${ref.journal}*`
+    if (ref.volume) {
+      journalPart += `, vol. ${ref.volume}`
+      if (ref.issue) journalPart += `, no. ${ref.issue}`
+    }
+    if (ref.pages) journalPart += `, pp. ${ref.pages}`
+    parts.push(`${journalPart},`)
+  }
+
+  // Year
+  parts.push(`${ref.year ?? 'n.d.'}.`)
+
+  // DOI or URL
+  if (ref.doi) {
+    parts.push(`doi: ${ref.doi}`)
+  } else if (ref.url) {
+    parts.push(`[Online]. Available: ${ref.url}`)
+  }
+
+  return parts.join(' ')
+}
+
+// ─────────────────────────────────────────────────────────────
+// Format Mendeley (APA 7th with DOI/URL emphasis) reference string
+// Mendeley exports APA but always includes DOI/URL as hyperlink
+// ─────────────────────────────────────────────────────────────
+
+export function formatMendeleyReference(ref: Reference): string {
+  // Same as APA but always appends retrieved-from line if no DOI
+  const apa = formatApaReference(ref)
+  if (!ref.doi && !ref.url) return apa
+  return apa
+}
+
+// ─────────────────────────────────────────────────────────────
+// Dispatcher — format a reference in the requested style
+// ─────────────────────────────────────────────────────────────
+
+export function formatReference(ref: Reference, style: ReferenceStyle): string {
+  if (style === 'ieee') return formatIeeeReference(ref)
+  if (style === 'mendeley') return formatMendeleyReference(ref)
+  return formatApaReference(ref)
+}
+
+// ─────────────────────────────────────────────────────────────
 // Build compact context block for AI prompt
 // Each reference is ~80 tokens — far cheaper than full HTML
 // ─────────────────────────────────────────────────────────────
@@ -137,7 +200,7 @@ export function buildReferencesContext(refs: Reference[]): string {
 // Build TipTap JSON content for DAFTAR PUSTAKA section
 // ─────────────────────────────────────────────────────────────
 
-export function buildReferencesTipTapContent(refs: Reference[]): Record<string, unknown> {
+export function buildReferencesTipTapContent(refs: Reference[], style: ReferenceStyle = 'apa'): Record<string, unknown> {
   if (refs.length === 0) {
     return {
       type: 'doc',
@@ -157,7 +220,7 @@ export function buildReferencesTipTapContent(refs: Reference[]): Record<string, 
       content: [
         {
           type: 'paragraph',
-          content: [{ type: 'text', text: formatApaReference(ref) }],
+          content: [{ type: 'text', text: formatReference(ref, style) }],
         },
       ],
     }))

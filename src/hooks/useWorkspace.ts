@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useWorkspaceStore } from '@/store/workspace.store'
 import { textToTipTapContent } from '@/services/ai.service'
 import { updateReferenceSectionAction } from '@/actions/reference.actions'
-import type { SectionTree } from '@/types/thesis.types'
+import { updateReferenceStyleAction } from '@/actions/thesis.actions'
+import type { SectionTree, ReferenceStyle } from '@/types/thesis.types'
 import { useThesis } from './useThesis'
 import { useSections } from './useSections'
 import { useAI } from './useAI'
@@ -13,6 +14,7 @@ import { useExport } from './useExport'
 import { useReferences } from './useReferences'
 import { useAuth } from './useAuth'
 import { useUsage } from './useUsage'
+import { useProfile } from './useProfile'
 
 function findSectionById(sections: SectionTree[], id: string): SectionTree | null {
   for (const section of sections) {
@@ -37,6 +39,7 @@ export function useWorkspace() {
   const { logout } = useAuth()
   const { exportDocx, isExporting } = useExport()
   const { usage, refetchUsage } = useUsage()
+  const { profile } = useProfile()
   const {
     references,
     isSearching,
@@ -111,11 +114,10 @@ export function useWorkspace() {
       if (generatedText) {
         updateSectionContent(sectionId, textToTipTapContent(generatedText))
 
-        // 3. Update DAFTAR PUSTAKA section; refetch if it didn't exist yet
+        // 3. Update DAFTAR PUSTAKA section and refetch so editor shows updated content
         if (currentRefs.length > 0) {
-          const hasRefSection = sections.some((s) => s.title === 'DAFTAR PUSTAKA')
           updateReferenceSectionAction(thesis.id).then(() => {
-            if (!hasRefSection) refetchSections()
+            refetchSections()
           })
         }
       }
@@ -141,6 +143,7 @@ export function useWorkspace() {
 
   return {
     thesis,
+    profile,
     sections,
     isLoading: thesisLoading || sectionsLoading,
     activeSectionId,
@@ -170,6 +173,12 @@ export function useWorkspace() {
     },
     onToggleSearch: toggleSearch,
     onDeleteReference: deleteReference,
+    onChangeReferenceStyle: async (style: ReferenceStyle) => {
+      if (!thesis) return
+      await updateReferenceStyleAction(style)
+      await updateReferenceSectionAction(thesis.id)
+      refetchSections()
+    },
     isExporting,
     onRenameSection: renameSection,
     onAddSection: addSection,

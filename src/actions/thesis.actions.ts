@@ -4,7 +4,7 @@
 
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { buildDefaultSections, type DefaultSectionNode } from '@/services/thesis.service'
-import type { Thesis, TemplateType } from '@/types/thesis.types'
+import type { Thesis, TemplateType, ReferenceStyle } from '@/types/thesis.types'
 
 export async function getThesisAction(): Promise<{ data?: Thesis; error?: string }> {
   const supabase = await createClient()
@@ -44,6 +44,22 @@ export async function createThesisAction(data: {
   await insertSectionsRecursive(supabase, thesis.id, buildDefaultSections(), null)
 
   return { data: thesis }
+}
+
+export async function updateReferenceStyleAction(
+  style: ReferenceStyle,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const auth = await getAuthUser(supabase)
+  if ('error' in auth) return auth
+
+  const { error } = await supabase
+    .from('theses')
+    .update({ reference_style: style })
+    .eq('user_id', auth.userId)
+
+  if (error) return { error: error.message }
+  return {}
 }
 
 async function insertSectionsRecursive(

@@ -5,7 +5,8 @@
       "Bash(npx shadcn@latest add dialog alert-dialog --yes)",
       "Bash(npm install axios)",
       "Bash(pnpm add axios)",
-      "Bash(curl -s --request GET --url 'https://use.api.co.id/regional/indonesia/universities?page=1&name=binus' --header 'accept: application/json' --header 'x-api-co-id: lJrw5PYDVOxqSnSqLzPcJGKYZzGR9XxLjoyYQ9jZWmOBz6HnHm')"
+      "Bash(curl -s --request GET --url 'https://use.api.co.id/regional/indonesia/universities?page=1&name=binus' --header 'accept: application/json' --header 'x-api-co-id: lJrw5PYDVOxqSnSqLzPcJGKYZzGR9XxLjoyYQ9jZWmOBz6HnHm')",
+      "Bash(npx tsc:*)"
     ]
   }
 }

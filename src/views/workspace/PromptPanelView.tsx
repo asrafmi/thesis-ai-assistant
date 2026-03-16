@@ -12,7 +12,7 @@ import {
   Trash2,
   Search,
 } from 'lucide-react';
-import type { Reference } from '@/types/thesis.types';
+import type { Reference, ReferenceStyle } from '@/types/thesis.types';
 import type { UsageData } from '@/lib/limits';
 
 interface PromptPanelViewProps {
@@ -25,9 +25,11 @@ interface PromptPanelViewProps {
   searchError: string | null;
   usage: UsageData | null;
   onGenerate: (prompt: string) => void;
+  referenceStyle: ReferenceStyle;
   onToggle: () => void;
   onToggleSearch: () => void;
   onDeleteReference: (refId: string) => void;
+  onChangeReferenceStyle: (style: ReferenceStyle) => void;
 }
 
 export function PromptPanelView({
@@ -39,10 +41,12 @@ export function PromptPanelView({
   isSearchEnabled,
   searchError,
   usage,
+  referenceStyle,
   onGenerate,
   onToggle,
   onToggleSearch,
   onDeleteReference,
+  onChangeReferenceStyle,
 }: PromptPanelViewProps) {
   const [prompt, setPrompt] = useState('');
   const [showRefs, setShowRefs] = useState(false);
@@ -87,6 +91,28 @@ export function PromptPanelView({
             Pilih bagian di sidebar untuk mulai menulis.
           </p>
         )}
+
+        {/* Reference style selector */}
+        <div className='flex flex-col gap-1.5'>
+          <span className='text-[10px] text-muted-foreground uppercase tracking-wider'>Format Referensi</span>
+          <div className='flex gap-1'>
+            {(['apa', 'ieee', 'mendeley'] as ReferenceStyle[]).map((s) => (
+              <button
+                key={s}
+                type='button'
+                onClick={() => onChangeReferenceStyle(s)}
+                className={[
+                  'flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors border',
+                  referenceStyle === s
+                    ? 'bg-primary/10 border-primary/40 text-primary'
+                    : 'bg-muted border-border text-muted-foreground hover:text-foreground',
+                ].join(' ')}
+              >
+                {s.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Search toggle */}
         <button
