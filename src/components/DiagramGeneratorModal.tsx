@@ -96,10 +96,42 @@ export function DiagramGeneratorModal({
     setIsLoading(false)
   }
 
-  function handleInsert() {
+  async function handleInsert() {
     if (!svgOutput) return
-    const dataUrl = `data:image/svg+xml;base64,${btoa(new TextEncoder().encode(svgOutput).reduce((acc, b) => acc + String.fromCharCode(b), ''))}`
-    onInsert(dataUrl)
+
+    // Convert SVG → PNG via canvas so the exported .docx can embed it
+    const svgBase64 = btoa(new TextEncoder().encode(svgOutput).reduce((acc, b) => acc + String.fromCharCode(b), ''))
+    const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`
+
+    // Parse viewBox to get actual SVG dimensions
+    const viewBoxMatch = svgOutput.match(/viewBox="[^"]*\s+([\d.]+)\s+([\d.]+)"/)
+    const svgW = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 800
+    const svgH = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 600
+    const scale = 2 // 2x for crisp quality
+
+    await new Promise<void>((resolve) => {
+      const img = new window.Image()
+      img.onload = () => {
+        const w = svgW * scale
+        const h = svgH * scale
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')!
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, w, h)
+        ctx.drawImage(img, 0, 0, w, h)
+        const pngDataUrl = canvas.toDataURL('image/png')
+        onInsert(pngDataUrl)
+        resolve()
+      }
+      img.onerror = () => {
+        onInsert(svgDataUrl)
+        resolve()
+      }
+      img.src = svgDataUrl
+    })
+
     onClose()
   }
 

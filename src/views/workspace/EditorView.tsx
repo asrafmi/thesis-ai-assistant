@@ -166,6 +166,7 @@ function SectionBlock({
             isActive={isActive}
             onChange={(content) => onContentChange(section.id, content)}
             sectionTitle={section.title}
+            sectionId={section.id}
           />
         )}
       </div>
