@@ -141,6 +141,10 @@ export function useWorkspace() {
     ],
   )
 
+  const onSettings = useCallback(() => {
+    router.push('/settings')
+  }, [router])
+
   return {
     thesis,
     profile,
@@ -195,5 +199,6 @@ export function useWorkspace() {
     isUpgradeOpen: upgradeModal.isOpen,
     upgradeReason: upgradeModal.reason,
     onCloseUpgrade: () => setUpgradeModal((prev) => ({ ...prev, isOpen: false })),
+    onSettings,
   }
 }

@@ -272,6 +272,53 @@ export type Database = {
           },
         ]
       }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          midtrans_response: Json | null
+          order_id: string
+          payment_type: string | null
+          snap_token: string
+          status: Database["public"]["Enums"]["transaction_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          midtrans_response?: Json | null
+          order_id: string
+          payment_type?: string | null
+          snap_token: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          midtrans_response?: Json | null
+          order_id?: string
+          payment_type?: string | null
+          snap_token?: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -285,6 +332,13 @@ export type Database = {
       revision_source: "ai" | "user"
       template_type: "quantitative" | "qualitative"
       thesis_status: "draft" | "complete"
+      transaction_status:
+        | "pending"
+        | "settlement"
+        | "expire"
+        | "cancel"
+        | "deny"
+        | "refund"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -417,6 +471,14 @@ export const Constants = {
       revision_source: ["ai", "user"],
       template_type: ["quantitative", "qualitative"],
       thesis_status: ["draft", "complete"],
+      transaction_status: [
+        "pending",
+        "settlement",
+        "expire",
+        "cancel",
+        "deny",
+        "refund",
+      ],
     },
   },
 } as const
