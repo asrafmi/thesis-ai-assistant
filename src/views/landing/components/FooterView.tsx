@@ -29,6 +29,8 @@ export function FooterView() {
               { label: 'Harga', href: '#harga' },
               { label: 'Masuk', href: '/login' },
               { label: 'Daftar', href: '/register' },
+              { label: 'Syarat & Ketentuan', href: '/terms' },
+              { label: 'Kebijakan Privasi', href: '/privacy' },
             ].map((link) => (
               <a
                 key={link.label}
