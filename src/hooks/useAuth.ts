@@ -10,6 +10,7 @@ export function useAuth() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false)
 
   async function login(email: string, password: string) {
     setIsLoading(true)
@@ -53,5 +54,5 @@ export function useAuth() {
     setProfile((prev) => (prev ? { ...prev, ...data } : prev))
   }
 
-  return { profile, isLoading, error, login, register, logout, updateProfile }
+  return { profile, isLoading, error, isPasswordVisible, setIsPasswordVisible, login, register, logout, updateProfile }
 }

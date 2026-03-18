@@ -2,15 +2,18 @@
 
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Eye, EyeClosed } from 'lucide-react'
 import { AuthLeftPanel } from './AuthLeftPanel'
 
 interface RegisterViewProps {
   readonly onRegister: (email: string, password: string, fullName: string) => void
   readonly isLoading: boolean
   readonly error: string | null
+  readonly isPasswordVisible: boolean
+  readonly setIsPasswordVisible: (visible: boolean) => void
 }
 
-export function RegisterView({ onRegister, isLoading, error }: RegisterViewProps) {
+export function RegisterView({ onRegister, isLoading, error, isPasswordVisible, setIsPasswordVisible }: RegisterViewProps) {
   function handleSubmit(e: { preventDefault(): void; currentTarget: HTMLFormElement }) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -97,6 +100,7 @@ export function RegisterView({ onRegister, isLoading, error }: RegisterViewProps
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: 'easeOut', delay: 0.15 }}
+              className="relative"
             >
               <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-zinc-300">
                 Password
@@ -104,13 +108,24 @@ export function RegisterView({ onRegister, isLoading, error }: RegisterViewProps
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={isPasswordVisible ? 'text' : 'password'}
                 required
                 autoComplete="new-password"
                 placeholder="Minimal 8 karakter"
                 minLength={8}
                 className="w-full rounded-lg border border-white/8 bg-[#18181b] px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/30"
               />
+              {isPasswordVisible ? (
+                <Eye
+                  className="absolute right-3 top-1/2 bottom-1/2 cursor-pointer text-zinc-500"
+                  onClick={() => setIsPasswordVisible(false)}
+                />
+              ) : (
+                <EyeClosed
+                  className="absolute right-3 top-1/2 bottom-1/2 cursor-pointer text-zinc-500"
+                  onClick={() => setIsPasswordVisible(true)}
+                />
+              )}
             </motion.div>
 
             {/* Error */}

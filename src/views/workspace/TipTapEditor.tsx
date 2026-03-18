@@ -194,6 +194,17 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
     editor?.setEditable(isActive)
   }, [isActive, editor])
 
+  // Sync content prop → editor when content changes externally (e.g. refetch after style change)
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return
+    const newContent = content ?? EMPTY_DOC
+    const currentJSON = JSON.stringify(editor.getJSON())
+    const incomingJSON = JSON.stringify(newContent)
+    if (currentJSON !== incomingJSON) {
+      editor.commands.setContent(newContent)
+    }
+  }, [content, editor])
+
 
   return (
     <div>

@@ -38,7 +38,7 @@ export async function registerAction(
     return { error: 'Email ini sudah terdaftar. Silakan login.' }
   }
 
-  const { error: profileError } = await supabase.from('profiles').insert({
+  const { error: profileError } = await supabase.from('profiles').upsert({
     id: data.user.id,
     full_name: fullName,
   })
