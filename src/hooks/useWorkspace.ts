@@ -33,7 +33,7 @@ export function useWorkspace() {
     isOpen: false,
     reason: 'words',
   })
-  const { thesis, isLoading: thesisLoading } = useThesis()
+  const { thesis, isLoading: thesisLoading, refetchThesis } = useThesis()
   const { sections, isLoading: sectionsLoading, updateSectionContent, flushPendingSave, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const { logout } = useAuth()
@@ -180,8 +180,10 @@ export function useWorkspace() {
     onChangeReferenceStyle: async (style: ReferenceStyle) => {
       if (!thesis) return
       await updateReferenceStyleAction(style)
-      await updateReferenceSectionAction(thesis.id)
-      refetchSections()
+      await Promise.all([
+        updateReferenceSectionAction(thesis.id).then(() => refetchSections()),
+        refetchThesis(),
+      ])
     },
     isExporting,
     onRenameSection: renameSection,

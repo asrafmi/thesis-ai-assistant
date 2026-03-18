@@ -38,5 +38,10 @@ export function useThesis() {
     setIsLoading(false)
   }
 
-  return { thesis, isLoading, error, createThesis }
+  async function refetchThesis() {
+    const result = await getThesisAction()
+    if (!result.error) setThesis(result.data ?? null)
+  }
+
+  return { thesis, isLoading, error, createThesis, refetchThesis }
 }
