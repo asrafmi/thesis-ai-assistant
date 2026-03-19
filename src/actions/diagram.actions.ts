@@ -5,24 +5,23 @@ import { getAnthropicClient } from '@/lib/anthropic'
 export async function generateDiagramAction(params: {
   prompt: string
   sectionTitle?: string
+  sectionContent?: string
 }): Promise<{ data?: string; error?: string }> {
   try {
-    const systemPrompt = `Kamu adalah asisten untuk membuat diagram akademik skripsi menggunakan Mermaid.js syntax.
+    const systemPrompt = `Kamu adalah generator Mermaid.js diagram. Kamu HANYA boleh output Mermaid code yang valid.
 
-Tugas kamu:
-1. Baca deskripsi diagram dari user
-2. Generate HANYA Mermaid code yang valid, tanpa penjelasan tambahan
-3. Gunakan diagram type yang paling sesuai (flowchart, sequenceDiagram, classDiagram, dll)
-4. Pastikan syntax valid dan bisa dirender
-
-${params.sectionTitle ? `Konteks: diagram ini untuk bagian "${params.sectionTitle}"` : ''}
-
-PENTING:
-- Output HANYA berisi Mermaid code saja, tidak ada teks lain
-- Jangan sertakan backtick (\`\`\`) atau kata "mermaid" di awal
+ATURAN MUTLAK:
+- Output HANYA berisi Mermaid code, TIDAK ADA teks lain sama sekali
+- JANGAN pernah bertanya balik, minta klarifikasi, atau memberi penjelasan
+- JANGAN sertakan backtick (\`\`\`) atau kata "mermaid"
 - Mulai langsung dengan keyword diagram (flowchart, graph, sequenceDiagram, dll)
+- Jika deskripsi kurang detail, TETAP buat diagram terbaik yang bisa kamu buat berdasarkan konteks
 - Gunakan bahasa Indonesia untuk label/teks di dalam diagram
-- Untuk flowchart gunakan: flowchart TD atau flowchart LR`
+- Untuk flowchart gunakan: flowchart TD atau flowchart LR
+- Pastikan syntax valid dan bisa dirender oleh mermaid.js
+
+${params.sectionTitle ? `Konteks bagian: "${params.sectionTitle}"` : ''}
+${params.sectionContent ? `\nIsi konten bagian:\n${params.sectionContent}` : ''}`
 
     const message = await getAnthropicClient().messages.create({
       model: 'claude-sonnet-4-6',

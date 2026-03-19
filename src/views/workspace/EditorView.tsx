@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { GraduationCap } from 'lucide-react';
 import type { SectionTree, Thesis, Profile } from '@/types/thesis.types';
 import { TipTapEditor } from './TipTapEditor';
-import { extractFigures, type FigureEntry } from '@/services/figure.service';
+import { extractFigures, buildFigureLabelMap, type FigureEntry } from '@/services/figure.service';
 
 interface EditorViewProps {
   thesis: Thesis | null;
@@ -160,6 +160,7 @@ function SectionBlock({
   streamingContent,
   onContentChange,
   onClickSection,
+  figureLabelMap,
 }: {
   section: SectionTree;
   activeSectionId: string | null;
@@ -169,6 +170,7 @@ function SectionBlock({
     content: Record<string, unknown>,
   ) => void;
   onClickSection: (id: string) => void;
+  figureLabelMap: Record<string, string[]>;
 }) {
   const isActive = section.id === activeSectionId;
   const streamingText = streamingContent[section.id];
@@ -202,6 +204,7 @@ function SectionBlock({
             isActive={isActive}
             onChange={(content) => onContentChange(section.id, content)}
             sectionTitle={section.title}
+            figureLabels={figureLabelMap[section.id] ?? []}
           />
         )}
       </div>
@@ -215,6 +218,7 @@ function SectionBlock({
               streamingContent={streamingContent}
               onContentChange={onContentChange}
               onClickSection={onClickSection}
+              figureLabelMap={figureLabelMap}
             />
           ))}
         </div>
@@ -238,6 +242,9 @@ export function EditorView({
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [activeSectionId]);
 
+  const figures = extractFigures(sections);
+  const figureLabelMap = buildFigureLabelMap(sections);
+
   if (sections.length === 0) {
     return (
       <div className='flex-1 flex items-center justify-center text-muted-foreground text-sm'>
@@ -251,7 +258,7 @@ export function EditorView({
       <div className='max-w-3xl mx-auto px-12 py-10 pb-32'>
         <CoverPage thesis={thesis} profile={profile} />
         <DaftarIsiSection sections={sections} />
-        <DaftarGambarSection figures={extractFigures(sections)} />
+        <DaftarGambarSection figures={figures} />
         {sections.map((section) => (
           <SectionBlock
             key={section.id}
@@ -260,6 +267,7 @@ export function EditorView({
             streamingContent={streamingContent}
             onContentChange={onContentChange}
             onClickSection={onSelectSection}
+            figureLabelMap={figureLabelMap}
           />
         ))}
       </div>

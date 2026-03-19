@@ -78,3 +78,17 @@ export function extractFigures(sections: SectionTree[]): FigureEntry[] {
 
   return figures
 }
+
+/**
+ * Build a map of sectionId → ordered list of figure labels for that section.
+ * Used to inject labels into TipTap editor image nodes.
+ */
+export function buildFigureLabelMap(sections: SectionTree[]): Record<string, string[]> {
+  const figures = extractFigures(sections)
+  const map: Record<string, string[]> = {}
+  for (const fig of figures) {
+    if (!map[fig.sectionId]) map[fig.sectionId] = []
+    map[fig.sectionId].push(fig.label)
+  }
+  return map
+}

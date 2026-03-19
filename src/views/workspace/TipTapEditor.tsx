@@ -14,6 +14,7 @@ interface TipTapEditorProps {
   isActive: boolean
   onChange: (content: Record<string, unknown>) => void
   sectionTitle?: string
+  figureLabels?: string[]
 }
 
 const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] }
@@ -131,7 +132,7 @@ function Toolbar({
   )
 }
 
-export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipTapEditorProps) {
+export function TipTapEditor({ content, isActive, onChange, sectionTitle, figureLabels }: TipTapEditorProps) {
   const editorRef = useRef<Editor | null>(null)
   const [diagramModalOpen, setDiagramModalOpen] = useState(false)
 
@@ -205,6 +206,22 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
     }
   }, [content, editor])
 
+  // Sync figure labels into image node attributes
+  useEffect(() => {
+    if (!editor || editor.isDestroyed || !figureLabels?.length) return
+    let labelIndex = 0
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === 'image' && node.attrs.caption) {
+        const label = figureLabels[labelIndex] ?? null
+        if (node.attrs.figureLabel !== label) {
+          editor.view.dispatch(
+            editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, figureLabel: label })
+          )
+        }
+        labelIndex++
+      }
+    })
+  }, [editor, figureLabels])
 
   return (
     <div>
@@ -221,6 +238,7 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
         onClose={() => setDiagramModalOpen(false)}
         onInsert={(dataUrl: string, caption?: string) => handleInsertDiagram(dataUrl, caption)}
         sectionTitle={sectionTitle}
+        sectionContent={editor?.getText()}
       />
     </div>
   )

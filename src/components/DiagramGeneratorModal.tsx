@@ -13,6 +13,7 @@ interface DiagramGeneratorModalProps {
   onClose: () => void
   onInsert: (svgString: string, caption?: string) => void
   sectionTitle?: string
+  sectionContent?: string
 }
 
 function DiagramSkeleton() {
@@ -36,6 +37,7 @@ export function DiagramGeneratorModal({
   onClose,
   onInsert,
   sectionTitle,
+  sectionContent,
 }: DiagramGeneratorModalProps) {
   const [prompt, setPrompt] = useState('')
   const [mermaidCode, setMermaidCode] = useState('')
@@ -87,7 +89,7 @@ export function DiagramGeneratorModal({
     setSvgOutput('')
     setMermaidCode('')
 
-    const result = await generateDiagramAction({ prompt, sectionTitle })
+    const result = await generateDiagramAction({ prompt, sectionTitle, sectionContent })
 
     if (result.error) {
       setError(result.error)

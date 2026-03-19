@@ -14,6 +14,7 @@ interface ImageAttrs {
   align: Align
   caption: string | null
   captionSource: string | null
+  figureLabel: string | null
 }
 
 // ─── Align Toolbar ───────────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ function AlignToolbar({
 // ─── Node View Component ─────────────────────────────────────────────────────
 
 function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps) {
-  const { src, alt, width, align, caption, captionSource } = node.attrs as ImageAttrs
+  const { src, alt, width, align, caption, captionSource, figureLabel } = node.attrs as ImageAttrs
   const imgRef = useRef<HTMLImageElement>(null)
   const startX = useRef(0)
   const startWidth = useRef(0)
@@ -195,8 +196,8 @@ function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps)
             >
               {caption ? (
                 <>
-                  <span className="font-bold">{caption.split(' ').slice(0, 2).join(' ')}</span>
-                  {' '}{caption.split(' ').slice(2).join(' ')}
+                  {figureLabel && <span className="font-bold">{figureLabel} </span>}
+                  {caption}
                   {captionSource && <span className="italic"> [Sumber: {captionSource}]</span>}
                 </>
               ) : (
@@ -256,6 +257,11 @@ export const ResizableImage = Node.create({
         default: null,
         parseHTML: (el) => el.getAttribute('data-caption-source'),
         renderHTML: (attrs) => attrs.captionSource ? { 'data-caption-source': attrs.captionSource } : {},
+      },
+      figureLabel: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
       },
     }
   },
