@@ -7,6 +7,16 @@ import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
 type Align = 'left' | 'center' | 'right'
 
+interface ImageAttrs {
+  src: string
+  alt: string
+  width: number | null
+  align: Align
+  caption: string | null
+  captionSource: string | null
+  figureLabel: string | null
+}
+
 // ─── Align Toolbar ───────────────────────────────────────────────────────────
 
 function AlignToolbar({
@@ -50,16 +60,13 @@ function AlignToolbar({
 // ─── Node View Component ─────────────────────────────────────────────────────
 
 function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps) {
-  const { src, alt, width, align } = node.attrs as {
-    src: string
-    alt: string
-    width: number | null
-    align: Align
-  }
+  const { src, alt, width, align, caption, captionSource, figureLabel } = node.attrs as ImageAttrs
   const imgRef = useRef<HTMLImageElement>(null)
   const startX = useRef(0)
   const startWidth = useRef(0)
   const [isResizing, setIsResizing] = useState(false)
+  const [isEditingCaption, setIsEditingCaption] = useState(false)
+  const [captionDraft, setCaptionDraft] = useState(caption ?? '')
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -109,6 +116,7 @@ function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps)
       className="my-2"
       data-drag-handle
     >
+      <div className="flex flex-col items-center">
       <div className="relative inline-block group">
         {selected && !isResizing && (
           <AlignToolbar
@@ -155,6 +163,51 @@ function ResizableImageView({ node, updateAttributes, selected }: NodeViewProps)
           </div>
         )}
       </div>
+
+      {/* Caption below image */}
+      {(caption || selected) && (
+        <div className="w-full mt-1" style={{ maxWidth: `${width ?? 400}px` }}>
+          {isEditingCaption ? (
+            <input
+              autoFocus
+              value={captionDraft}
+              onChange={(e) => setCaptionDraft(e.target.value)}
+              onBlur={() => {
+                updateAttributes({ caption: captionDraft || null })
+                setIsEditingCaption(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  updateAttributes({ caption: captionDraft || null })
+                  setIsEditingCaption(false)
+                }
+              }}
+              className="w-full text-center text-xs text-muted-foreground bg-transparent border-b border-dashed border-border outline-none py-0.5"
+              placeholder="Tambah caption gambar..."
+            />
+          ) : (
+            <p
+              className="text-center text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-0.5"
+              onClick={(e) => {
+                e.stopPropagation()
+                setCaptionDraft(caption ?? '')
+                setIsEditingCaption(true)
+              }}
+            >
+              {caption ? (
+                <>
+                  {figureLabel && <span className="font-bold">{figureLabel} </span>}
+                  {caption}
+                  {captionSource && <span className="italic"> [Sumber: {captionSource}]</span>}
+                </>
+              ) : (
+                <span className="italic opacity-50">Klik untuk tambah caption</span>
+              )}
+            </p>
+          )}
+        </div>
+      )}
+      </div>
     </NodeViewWrapper>
   )
 }
@@ -194,6 +247,21 @@ export const ResizableImage = Node.create({
         default: 'center',
         parseHTML: (el) => el.getAttribute('data-align') ?? 'center',
         renderHTML: (attrs) => ({ 'data-align': attrs.align ?? 'center' }),
+      },
+      caption: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-caption'),
+        renderHTML: (attrs) => attrs.caption ? { 'data-caption': attrs.caption } : {},
+      },
+      captionSource: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-caption-source'),
+        renderHTML: (attrs) => attrs.captionSource ? { 'data-caption-source': attrs.captionSource } : {},
+      },
+      figureLabel: {
+        default: null,
+        parseHTML: () => null,
+        renderHTML: () => ({}),
       },
     }
   },
