@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-const WA_PRO_URL = `https://api.whatsapp.com/send?phone=6282245101283&text=${encodeURIComponent('Halo, saya tertarik dengan Plan Pro SkripsiAI. Bisa bantu saya untuk berlangganan?')}`
-
 const plans = [
   {
     name: 'Gratis',
@@ -13,7 +11,6 @@ const plans = [
     badge: null,
     cta: 'Mulai Gratis',
     ctaHref: '/register',
-    ctaExternal: false,
     ctaVariant: 'outline' as const,
     features: [
       'Batas 5.000 kata per bulan',
@@ -24,13 +21,12 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 'Rp 49.000',
-    period: 'per bulan',
+    price: 'Rp 49.900',
+    period: 'sekali bayar',
     description: 'Untuk mahasiswa yang serius menyelesaikan skripsi',
     badge: 'Paling Populer',
-    cta: 'Hubungi via WhatsApp',
-    ctaHref: WA_PRO_URL,
-    ctaExternal: true,
+    cta: 'Daftar & Upgrade',
+    ctaHref: '/register',
     ctaVariant: 'primary' as const,
     features: [
       'Kata tidak terbatas',
@@ -118,8 +114,6 @@ export function PricingView() {
 
               <Link
                 href={plan.ctaHref}
-                target={plan.ctaExternal ? '_blank' : undefined}
-                rel={plan.ctaExternal ? 'noopener noreferrer' : undefined}
                 className={`block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition-colors ${
                   plan.ctaVariant === 'primary'
                     ? 'bg-blue-600 text-white hover:bg-blue-500'

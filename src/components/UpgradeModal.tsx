@@ -1,13 +1,7 @@
 'use client'
 
-import { X, Zap, MessageCircle } from 'lucide-react'
-
-const WA_PHONE = '6282245101283'
-
-const MESSAGES = {
-  words: 'Halo, saya ingin upgrade ke Plan Pro SkripsiAI karena sudah mencapai batas 5.000 kata bulanan.',
-  exports: 'Halo, saya ingin upgrade ke Plan Pro SkripsiAI karena sudah mencapai batas 3x export bulanan.',
-}
+import { useRouter } from 'next/navigation'
+import { X, Zap, Crown } from 'lucide-react'
 
 const DESCRIPTIONS = {
   words: 'Kamu sudah mencapai batas 5.000 kata AI per bulan pada paket Gratis.',
@@ -21,9 +15,13 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ isOpen, reason, onClose }: UpgradeModalProps) {
+  const router = useRouter()
+
   if (!isOpen) return null
 
-  const waUrl = `https://api.whatsapp.com/send?phone=${WA_PHONE}&text=${encodeURIComponent(MESSAGES[reason])}`
+  function goToSettings() {
+    router.push('/settings')
+  }
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
@@ -63,15 +61,14 @@ export function UpgradeModal({ isOpen, reason, onClose }: UpgradeModalProps) {
           ))}
         </ul>
 
-        <a
-          href={waUrl}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='flex items-center justify-center gap-2 w-full rounded-lg bg-green-600 hover:bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-colors'
+        <button
+          type='button'
+          onClick={goToSettings}
+          className='flex items-center justify-center gap-2 w-full rounded-lg bg-primary hover:bg-primary/90 px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors'
         >
-          <MessageCircle size={15} />
-          Hubungi via WhatsApp
-        </a>
+          <Crown size={15} />
+          Upgrade Sekarang
+        </button>
 
         <button
           type='button'
