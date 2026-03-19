@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { X, Download, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { generateHTML } from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
-import type { JSONContent } from '@tiptap/core'
 import type { SectionTree, Thesis } from '@/types/thesis.types'
-import { extractFigures, type FigureEntry } from '@/services/figure.service'
+import { extractFigures, buildFigureLabelMap, type FigureEntry } from '@/services/figure.service'
 
 interface ExportPreviewModalProps {
   thesis: Thesis | null
@@ -19,15 +15,6 @@ interface ExportPreviewModalProps {
 }
 
 const META_SECTIONS = new Set(['DAFTAR PUSTAKA'])
-
-function toHTML(content: Record<string, unknown> | null): string {
-  if (!content) return ''
-  try {
-    return generateHTML(content as JSONContent, [StarterKit, Image])
-  } catch {
-    return ''
-  }
-}
 
 function flattenForToc(sections: SectionTree[], depth = 0): { section: SectionTree; depth: number }[] {
   return sections.flatMap((s) => {
@@ -64,16 +51,107 @@ const HEADING_STYLES: Record<number, string> = {
   3: 'text-xs font-medium mt-3 mb-1 text-black',
 }
 
-function SectionContent({ section }: { section: SectionTree }) {
-  const html = toHTML(section.content)
+type TipTapNode = {
+  type: string
+  text?: string
+  marks?: { type: string }[]
+  attrs?: Record<string, unknown>
+  content?: TipTapNode[]
+}
+
+const ALIGN_MAP: Record<string, string> = {
+  left: 'flex-start',
+  center: 'center',
+  right: 'flex-end',
+}
+
+function TipTapContentRenderer({ content, figureLabels }: { content: Record<string, unknown> | null; figureLabels: string[] }) {
+  if (!content) return null
+  const doc = content as { content?: TipTapNode[] }
+  const nodes = doc.content ?? []
+  let figIndex = 0
+
+  function renderMarks(node: TipTapNode): React.ReactNode {
+    if (node.type === 'text') {
+      let el: React.ReactNode = node.text ?? ''
+      for (const mark of node.marks ?? []) {
+        if (mark.type === 'bold') el = <strong key="b">{el}</strong>
+        if (mark.type === 'italic') el = <em key="i">{el}</em>
+        if (mark.type === 'strike') el = <s key="s">{el}</s>
+      }
+      return el
+    }
+    return null
+  }
+
+  function renderInline(nodes: TipTapNode[]): React.ReactNode[] {
+    return nodes.map((n, i) => <span key={i}>{renderMarks(n)}</span>)
+  }
+
+  function renderNode(node: TipTapNode, key: number): React.ReactNode {
+    if (node.type === 'paragraph') {
+      return <p key={key} className="text-xs text-gray-800 leading-relaxed mb-2">{renderInline(node.content ?? [])}</p>
+    }
+    if (node.type === 'heading') {
+      const level = (node.attrs?.level as number) ?? 1
+      const cls = HEADING_STYLES[level] ?? HEADING_STYLES[3]
+      return <h3 key={key} className={cls}>{renderInline(node.content ?? [])}</h3>
+    }
+    if (node.type === 'bulletList') {
+      return (
+        <ul key={key} className="list-disc list-inside text-xs text-gray-800 mb-2 pl-2">
+          {(node.content ?? []).map((li, i) => (
+            <li key={i}>{renderInline((li.content?.[0]?.content) ?? [])}</li>
+          ))}
+        </ul>
+      )
+    }
+    if (node.type === 'orderedList') {
+      return (
+        <ol key={key} className="list-decimal list-inside text-xs text-gray-800 mb-2 pl-2">
+          {(node.content ?? []).map((li, i) => (
+            <li key={i}>{renderInline((li.content?.[0]?.content) ?? [])}</li>
+          ))}
+        </ol>
+      )
+    }
+    if (node.type === 'image') {
+      const src = node.attrs?.src as string
+      const width = (node.attrs?.width as number) ?? 400
+      const align = (node.attrs?.align as string) ?? 'center'
+      const caption = node.attrs?.caption as string | undefined
+      const captionSource = node.attrs?.captionSource as string | undefined
+      const label = caption ? figureLabels[figIndex++] : undefined
+
+      return (
+        <div key={key} className="my-3" style={{ display: 'flex', justifyContent: ALIGN_MAP[align] ?? 'center' }}>
+          <div className="flex flex-col items-center" style={{ maxWidth: `${width}px` }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={caption ?? ''} style={{ width: `${width}px` }} className="rounded max-w-full" />
+            {caption && (
+              <p className="text-center text-[10px] text-gray-600 mt-1">
+                {label && <span className="font-bold">{label} </span>}
+                {caption}
+                {captionSource && <span className="italic"> [Sumber: {captionSource}]</span>}
+              </p>
+            )}
+          </div>
+        </div>
+      )
+    }
+    return null
+  }
+
+  return <>{nodes.map((n, i) => renderNode(n, i))}</>
+}
+
+function SectionContent({ section, figureLabelMap }: { section: SectionTree; figureLabelMap: Record<string, string[]> }) {
   return (
     <div>
       <h2 className={HEADING_STYLES[section.level] ?? HEADING_STYLES[3]}>{section.title}</h2>
-      {html && (
-        <div className="preview-content text-gray-800" dangerouslySetInnerHTML={{ __html: html }} />
-      )}
+      <TipTapContentRenderer content={section.content} figureLabels={figureLabelMap[section.id] ?? []} />
       {section.children.map((child) => (
-        <SectionContent key={child.id} section={child} />
+        <SectionContent key={child.id} section={child} figureLabelMap={figureLabelMap} />
       ))}
     </div>
   )
@@ -165,6 +243,7 @@ export function ExportPreviewModal({
 
   const tocEntries = flattenForToc(sections)
   const figures = extractFigures(sections)
+  const figureLabelMap = buildFigureLabelMap(sections)
   const pages = buildPages(thesis, sections, tocEntries, figures)
   const total = pages.length
 
@@ -214,7 +293,7 @@ export function ExportPreviewModal({
             {page.type === 'cover' && <CoverPage thesis={page.thesis} />}
             {page.type === 'toc' && <TocPage entries={page.entries} />}
             {page.type === 'daftarGambar' && <DaftarGambarPage figures={page.figures} />}
-            {page.type === 'section' && <SectionContent section={page.section} />}
+            {page.type === 'section' && <SectionContent section={page.section} figureLabelMap={figureLabelMap} />}
           </div>
         </div>
 
