@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Update transaction record
-  const { data: transaction } = await supabase
+  const { data: transaction, error } = await supabase
     .from('transactions')
     .update({
       status,
@@ -66,6 +66,11 @@ export async function POST(req: NextRequest) {
     .eq('order_id', order_id)
     .select('user_id')
     .single()
+
+  if (error) {
+    console.error('Error updating transaction:', error)
+    return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
+  }
 
   // Upgrade user to pro on successful payment
   if (status === 'settlement' && transaction) {
