@@ -142,10 +142,10 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
     }
   }, [])
 
-  const handleInsertDiagram = useCallback(async (dataUrl: string) => {
+  const handleInsertDiagram = useCallback(async (dataUrl: string, caption?: string) => {
     const url = await uploadDataUrlToStorage(dataUrl)
     if (!url) return
-    editorRef.current?.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center' } }).run()
+    editorRef.current?.chain().focus().insertContent({ type: 'image', attrs: { src: url, width: 400, align: 'center', caption: caption ?? null } }).run()
   }, [])
 
   const editor = useEditor({
@@ -219,7 +219,7 @@ export function TipTapEditor({ content, isActive, onChange, sectionTitle }: TipT
       <DiagramGeneratorModal
         open={diagramModalOpen}
         onClose={() => setDiagramModalOpen(false)}
-        onInsert={handleInsertDiagram}
+        onInsert={(dataUrl: string, caption?: string) => handleInsertDiagram(dataUrl, caption)}
         sectionTitle={sectionTitle}
       />
     </div>

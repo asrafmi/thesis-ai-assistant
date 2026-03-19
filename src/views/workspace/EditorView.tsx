@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { GraduationCap } from 'lucide-react';
 import type { SectionTree, Thesis, Profile } from '@/types/thesis.types';
 import { TipTapEditor } from './TipTapEditor';
+import { extractFigures, type FigureEntry } from '@/services/figure.service';
 
 interface EditorViewProps {
   thesis: Thesis | null;
@@ -119,6 +120,40 @@ function DaftarIsiSection({ sections }: { sections: SectionTree[] }) {
   );
 }
 
+function DaftarGambarSection({ figures }: { figures: FigureEntry[] }) {
+  function scrollTo(sectionId: string) {
+    document
+      .getElementById(`section-${sectionId}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  if (figures.length === 0) return null;
+
+  return (
+    <div id='section-daftar-gambar' className='mb-2'>
+      <h2 className={HEADING_STYLES[1]}>DAFTAR GAMBAR</h2>
+      <div className='rounded-md px-3 py-3 bg-card/60'>
+        <div className='flex flex-col gap-1'>
+          {figures.map((fig) => (
+            <button
+              key={`${fig.sectionId}-${fig.label}`}
+              onClick={() => scrollTo(fig.sectionId)}
+              className='flex items-baseline gap-1 text-left group w-full'
+            >
+              <span className='text-sm text-muted-foreground group-hover:text-blue-400 transition-colors shrink-0'>
+                <span className='font-bold'>{fig.label}</span>{' '}
+                {fig.caption}
+                {fig.source && <span className='italic'> [Sumber: {fig.source}]</span>}
+              </span>
+              <span className='flex-1 border-b border-dotted border-border mb-0.75 min-w-2' />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SectionBlock({
   section,
   activeSectionId,
@@ -216,6 +251,7 @@ export function EditorView({
       <div className='max-w-3xl mx-auto px-12 py-10 pb-32'>
         <CoverPage thesis={thesis} profile={profile} />
         <DaftarIsiSection sections={sections} />
+        <DaftarGambarSection figures={extractFigures(sections)} />
         {sections.map((section) => (
           <SectionBlock
             key={section.id}

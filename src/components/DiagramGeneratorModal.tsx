@@ -5,12 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { generateDiagramAction } from '@/actions/diagram.actions'
+import { generateCaptionAction } from '@/actions/caption.actions'
 import { Code2, Image as ImageIcon } from 'lucide-react'
 
 interface DiagramGeneratorModalProps {
   open: boolean
   onClose: () => void
-  onInsert: (svgString: string) => void
+  onInsert: (svgString: string, caption?: string) => void
   sectionTitle?: string
 }
 
@@ -67,8 +68,9 @@ export function DiagramGeneratorModal({
         const { svg } = await mermaid.render(id, mermaidCode)
         setSvgOutput(svg)
         setError('')
-      } catch {
-        setError('Diagram tidak valid. Coba generate ulang.')
+      } catch (error) {
+        console.log('Error rendering Mermaid code:', mermaidCode, error)
+        setError('Diagram tidak valid. Coba generate ulang dengan deskripsi yang lebih detail.')
         setSvgOutput('')
       } finally {
         setIsRendering(false)
@@ -99,6 +101,10 @@ export function DiagramGeneratorModal({
   async function handleInsert() {
     if (!svgOutput) return
 
+    // Generate caption from the prompt
+    const captionResult = await generateCaptionAction({ description: prompt, sectionTitle })
+    const caption = captionResult.data ?? undefined
+
     // Convert SVG → PNG via canvas so the exported .docx can embed it
     const svgBase64 = btoa(new TextEncoder().encode(svgOutput).reduce((acc, b) => acc + String.fromCharCode(b), ''))
     const svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`
@@ -122,11 +128,11 @@ export function DiagramGeneratorModal({
         ctx.fillRect(0, 0, w, h)
         ctx.drawImage(img, 0, 0, w, h)
         const pngDataUrl = canvas.toDataURL('image/png')
-        onInsert(pngDataUrl)
+        onInsert(pngDataUrl, caption)
         resolve()
       }
       img.onerror = () => {
-        onInsert(svgDataUrl)
+        onInsert(svgDataUrl, caption)
         resolve()
       }
       img.src = svgDataUrl

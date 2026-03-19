@@ -7,6 +7,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import type { JSONContent } from '@tiptap/core'
 import type { SectionTree, Thesis } from '@/types/thesis.types'
+import { extractFigures, type FigureEntry } from '@/services/figure.service'
 
 interface ExportPreviewModalProps {
   thesis: Thesis | null
@@ -39,16 +40,19 @@ function flattenForToc(sections: SectionTree[], depth = 0): { section: SectionTr
 type PreviewPage =
   | { type: 'cover'; thesis: Thesis }
   | { type: 'toc'; entries: { section: SectionTree; depth: number }[] }
+  | { type: 'daftarGambar'; figures: FigureEntry[] }
   | { type: 'section'; section: SectionTree }
 
 function buildPages(
   thesis: Thesis | null,
   sections: SectionTree[],
   tocEntries: { section: SectionTree; depth: number }[],
+  figures: FigureEntry[],
 ): PreviewPage[] {
   const pages: PreviewPage[] = []
   if (thesis) pages.push({ type: 'cover', thesis })
   if (tocEntries.length > 0) pages.push({ type: 'toc', entries: tocEntries })
+  if (figures.length > 0) pages.push({ type: 'daftarGambar', figures })
   sections.forEach((s) => pages.push({ type: 'section', section: s }))
   return pages
 }
@@ -128,6 +132,26 @@ function TocPage({ entries }: { entries: { section: SectionTree; depth: number }
   )
 }
 
+function DaftarGambarPage({ figures }: { figures: FigureEntry[] }) {
+  return (
+    <div>
+      <h2 className="text-sm font-bold uppercase text-black mb-6">Daftar Gambar</h2>
+      <div className="flex flex-col gap-1.5">
+        {figures.map((fig) => (
+          <div key={`${fig.sectionId}-${fig.label}`} className="flex items-baseline gap-1">
+            <span className="text-xs shrink-0">
+              <span className="font-bold">{fig.label}</span>{' '}
+              <span className="text-gray-700">{fig.caption}</span>
+              {fig.source && <span className="text-gray-500 italic"> [Sumber: {fig.source}]</span>}
+            </span>
+            <span className="flex-1 border-b border-dotted border-gray-300 mb-0.5 min-w-2" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // --- Modal ---
 export function ExportPreviewModal({
   thesis,
@@ -140,7 +164,8 @@ export function ExportPreviewModal({
   const [currentPage, setCurrentPage] = useState(0)
 
   const tocEntries = flattenForToc(sections)
-  const pages = buildPages(thesis, sections, tocEntries)
+  const figures = extractFigures(sections)
+  const pages = buildPages(thesis, sections, tocEntries, figures)
   const total = pages.length
 
   function handleClose() {
@@ -188,6 +213,7 @@ export function ExportPreviewModal({
           >
             {page.type === 'cover' && <CoverPage thesis={page.thesis} />}
             {page.type === 'toc' && <TocPage entries={page.entries} />}
+            {page.type === 'daftarGambar' && <DaftarGambarPage figures={page.figures} />}
             {page.type === 'section' && <SectionContent section={page.section} />}
           </div>
         </div>
