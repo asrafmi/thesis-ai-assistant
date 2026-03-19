@@ -14,6 +14,7 @@ import {
 } from 'docx'
 import sharp from 'sharp'
 import type { Thesis, SectionTree } from '@/types/thesis.types'
+import { extractFigures } from '@/services/figure.service'
 
 // 1 cm ≈ 567 twip
 const CM = 567
@@ -73,7 +74,9 @@ async function fetchImageBuffer(src: string): Promise<{ buffer: Buffer; width: n
   }
 }
 
-async function contentToDocxNodes(content: TipTapNode[]): Promise<Paragraph[]> {
+type FigureCounter = { chapter: number; count: number }
+
+async function contentToDocxNodes(content: TipTapNode[], figureCounter?: FigureCounter): Promise<Paragraph[]> {
   const paragraphs: Paragraph[] = []
 
   for (const node of content) {
@@ -136,7 +139,7 @@ async function contentToDocxNodes(content: TipTapNode[]): Promise<Paragraph[]> {
           paragraphs.push(
             new Paragraph({
               alignment: alignMap[align] ?? AlignmentType.LEFT,
-              spacing: { before: 120, after: 120 },
+              spacing: { before: 120, after: 60 },
               children: [
                 new ImageRun({
                   data: img.buffer,
@@ -146,6 +149,28 @@ async function contentToDocxNodes(content: TipTapNode[]): Promise<Paragraph[]> {
               ],
             }),
           )
+          // Add caption below image if present
+          const caption = node.attrs?.caption as string | undefined
+          const captionSource = node.attrs?.captionSource as string | undefined
+          if (caption) {
+            const captionLabel = figureCounter
+              ? `Gambar ${figureCounter.chapter}.${++figureCounter.count}`
+              : 'Gambar'
+            const captionRuns: TextRun[] = [
+              new TextRun({ text: `${captionLabel} `, bold: true, font: FONT, size: BODY_SIZE }),
+              new TextRun({ text: caption, font: FONT, size: BODY_SIZE }),
+            ]
+            if (captionSource) {
+              captionRuns.push(new TextRun({ text: ` [Sumber: ${captionSource}]`, italics: true, font: FONT, size: BODY_SIZE }))
+            }
+            paragraphs.push(
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 60, after: 120 },
+                children: captionRuns,
+              }),
+            )
+          }
         }
       }
     }
@@ -154,7 +179,7 @@ async function contentToDocxNodes(content: TipTapNode[]): Promise<Paragraph[]> {
   return paragraphs
 }
 
-async function sectionToDocxNodes(section: SectionTree, depth = 0): Promise<Paragraph[]> {
+async function sectionToDocxNodes(section: SectionTree, depth = 0, figureCounter?: FigureCounter): Promise<Paragraph[]> {
   const nodes: Paragraph[] = []
 
   const headingMap = { 1: HeadingLevel.HEADING_1, 2: HeadingLevel.HEADING_2, 3: HeadingLevel.HEADING_3 }
@@ -169,12 +194,12 @@ async function sectionToDocxNodes(section: SectionTree, depth = 0): Promise<Para
 
   if (section.content) {
     const doc = section.content as { content?: TipTapNode[] }
-    const bodyNodes = await contentToDocxNodes(doc.content ?? [])
+    const bodyNodes = await contentToDocxNodes(doc.content ?? [], figureCounter)
     nodes.push(...bodyNodes)
   }
 
   for (const child of section.children) {
-    nodes.push(...(await sectionToDocxNodes(child, depth + 1)))
+    nodes.push(...(await sectionToDocxNodes(child, depth + 1, figureCounter)))
   }
 
   return nodes
@@ -202,6 +227,34 @@ function makeCoverPage(thesis: Thesis): Paragraph[] {
   ]
 }
 
+function makeDaftarGambarPage(sections: SectionTree[]): Paragraph[] {
+  const figures = extractFigures(sections)
+  if (figures.length === 0) return []
+
+  return [
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: 'DAFTAR GAMBAR', font: FONT, bold: true })],
+      spacing: { before: 0, after: 240 },
+    }),
+    ...figures.map(
+      (fig) =>
+        new Paragraph({
+          spacing: { after: 80 },
+          children: [
+            new TextRun({ text: `${fig.label} `, bold: true, font: FONT, size: BODY_SIZE }),
+            new TextRun({ text: fig.caption, font: FONT, size: BODY_SIZE }),
+            ...(fig.source
+              ? [new TextRun({ text: ` [Sumber: ${fig.source}]`, italics: true, font: FONT, size: BODY_SIZE })]
+              : []),
+          ],
+        }),
+    ),
+    new Paragraph({ children: [new PageBreak()] }),
+  ]
+}
+
 function makeTocPage() {
   return [
     new Paragraph({
@@ -221,7 +274,17 @@ function makeTocPage() {
 export async function buildDocxFromThesis(thesis: Thesis, sections: SectionTree[]): Promise<string> {
   const coverNodes = makeCoverPage(thesis)
   const tocNodes = makeTocPage()
-  const bodyNodes = (await Promise.all(sections.map((s) => sectionToDocxNodes(s)))).flat()
+  const daftarGambarNodes = makeDaftarGambarPage(sections)
+
+  // Build body with figure counter tracking per chapter
+  const bodyNodes: Paragraph[] = []
+  let chapterCounter = 0
+  for (const section of sections) {
+    const isChapter = section.level === 1 && section.title.startsWith('BAB')
+    if (isChapter) chapterCounter++
+    const figCounter: FigureCounter = { chapter: chapterCounter, count: 0 }
+    bodyNodes.push(...(await sectionToDocxNodes(section, 0, isChapter ? figCounter : undefined)))
+  }
 
   const doc = new Document({
     styles: {
@@ -258,7 +321,7 @@ export async function buildDocxFromThesis(thesis: Thesis, sections: SectionTree[
             },
           },
         },
-        children: [...coverNodes, ...tocNodes, ...bodyNodes],
+        children: [...coverNodes, ...tocNodes, ...daftarGambarNodes, ...bodyNodes],
       },
     ],
   })
