@@ -7,7 +7,8 @@ import { textToTipTapContent } from '@/services/ai.service'
 import { updateReferenceSectionAction } from '@/actions/reference.actions'
 import { updateReferenceStyleAction } from '@/actions/thesis.actions'
 import type { SectionTree, ReferenceStyle } from '@/types/thesis.types'
-import { useThesis } from './useThesis'
+import type { UpgradeReason } from '@/components/UpgradeModal'
+import { useThesisById } from './useThesis'
 import { useSections } from './useSections'
 import { useAI } from './useAI'
 import { useExport } from './useExport'
@@ -25,15 +26,15 @@ function findSectionById(sections: SectionTree[], id: string): SectionTree | nul
   return null
 }
 
-export function useWorkspace() {
+export function useWorkspace(thesisId: string | undefined) {
   const router = useRouter()
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [streamingContent, setStreamingContent] = useState<Record<string, string>>({})
-  const [upgradeModal, setUpgradeModal] = useState<{ isOpen: boolean; reason: 'words' | 'exports' }>({
+  const [upgradeModal, setUpgradeModal] = useState<{ isOpen: boolean; reason: UpgradeReason }>({
     isOpen: false,
     reason: 'words',
   })
-  const { thesis, isLoading: thesisLoading, refetchThesis } = useThesis()
+  const { thesis, isLoading: thesisLoading, refetchThesis } = useThesisById(thesisId)
   const { sections, isLoading: sectionsLoading, updateSectionContent, flushPendingSave, renameSection, addSection, deleteSection, refetch: refetchSections } = useSections(thesis?.id)
   const { generate, isGenerating } = useAI()
   const { logout } = useAuth()
@@ -51,8 +52,9 @@ export function useWorkspace() {
   } = useReferences(thesis?.id)
 
   useEffect(() => {
-    if (!thesisLoading && thesis === null) router.push('/onboarding')
-  }, [thesisLoading, thesis, router])
+    if (!thesisLoading && !thesisId) router.push('/dashboard')
+  }, [thesisLoading, thesisId, router])
+
   const {
     activeSectionId,
     isSidebarOpen,
@@ -145,6 +147,10 @@ export function useWorkspace() {
     router.push('/settings')
   }, [router])
 
+  const onDashboard = useCallback(() => {
+    router.push('/dashboard')
+  }, [router])
+
   return {
     thesis,
     profile,
@@ -200,5 +206,6 @@ export function useWorkspace() {
     upgradeReason: upgradeModal.reason,
     onCloseUpgrade: () => setUpgradeModal((prev) => ({ ...prev, isOpen: false })),
     onSettings,
+    onDashboard,
   }
 }

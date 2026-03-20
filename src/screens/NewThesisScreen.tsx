@@ -1,9 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { OnboardingView } from '@/views/onboarding/OnboardingView'
-import { useCreateThesis, useTheses } from '@/hooks/useThesis'
+import { useCreateThesis } from '@/hooks/useThesis'
 import { updateProfileNimAction } from '@/actions/profile.actions'
 import type { TemplateType } from '@/types/thesis.types'
 
@@ -17,17 +15,8 @@ interface OnboardingFormData {
   nim: string
 }
 
-export function OnboardingScreen() {
-  const router = useRouter()
-  const { theses, isLoading: thesesLoading } = useTheses()
+export function NewThesisScreen() {
   const { createThesis, isLoading, error } = useCreateThesis()
-
-  // If user already has theses, redirect to dashboard
-  useEffect(() => {
-    if (!thesesLoading && theses.length > 0) {
-      router.push('/dashboard')
-    }
-  }, [thesesLoading, theses, router])
 
   async function handleSubmit(data: OnboardingFormData) {
     const { nim, ...thesisData } = data

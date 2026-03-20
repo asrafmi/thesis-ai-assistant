@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (user && PUBLIC_ONLY_PATHS.includes(pathname)) {
-    return NextResponse.redirect(new URL('/workspace', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response

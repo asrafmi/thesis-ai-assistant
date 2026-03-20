@@ -21,6 +21,38 @@ export async function getThesisAction(): Promise<{ data?: Thesis; error?: string
   return { data: data ?? undefined }
 }
 
+export async function getThesesAction(): Promise<{ data?: Thesis[]; error?: string }> {
+  const supabase = await createClient()
+  const auth = await getAuthUser(supabase)
+  if ('error' in auth) return auth
+
+  const { data, error } = await supabase
+    .from('theses')
+    .select('*')
+    .eq('user_id', auth.userId)
+    .order('updated_at', { ascending: false })
+
+  if (error) return { error: error.message }
+  return { data: data ?? [] }
+}
+
+export async function getThesisByIdAction(thesisId: string): Promise<{ data?: Thesis; error?: string }> {
+  const supabase = await createClient()
+  const auth = await getAuthUser(supabase)
+  if ('error' in auth) return auth
+
+  const { data, error } = await supabase
+    .from('theses')
+    .select('*')
+    .eq('id', thesisId)
+    .eq('user_id', auth.userId)
+    .maybeSingle()
+
+  if (error) return { error: error.message }
+  if (!data) return { error: 'Skripsi tidak ditemukan' }
+  return { data }
+}
+
 export async function createThesisAction(data: {
   title: string
   university: string
@@ -44,6 +76,21 @@ export async function createThesisAction(data: {
   await insertSectionsRecursive(supabase, thesis.id, buildDefaultSections(), null)
 
   return { data: thesis }
+}
+
+export async function deleteThesisAction(thesisId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const auth = await getAuthUser(supabase)
+  if ('error' in auth) return auth
+
+  const { error } = await supabase
+    .from('theses')
+    .delete()
+    .eq('id', thesisId)
+    .eq('user_id', auth.userId)
+
+  if (error) return { error: error.message }
+  return {}
 }
 
 export async function updateReferenceStyleAction(

@@ -2,6 +2,7 @@
 
 export const WORD_LIMIT_FREE = 5000
 export const EXPORT_LIMIT_FREE = 3
+export const THESIS_LIMIT_FREE = 1
   
 export const PRO_PLAN_PRICE = 49900 // Rp 49.900
 
