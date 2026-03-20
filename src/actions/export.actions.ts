@@ -5,6 +5,7 @@
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { buildSectionTree } from '@/services/section.service'
 import { buildDocxFromThesis } from '@/services/docx.service'
+import { EXPORT_LIMIT_FREE, EXPORT_LIMIT_STARTER } from '@/lib/limits'
 
 import type { Section } from '@/types/thesis.types'
 
@@ -13,7 +14,7 @@ export async function exportThesisDocxAction(): Promise<{ data?: string; error?:
   const auth = await getAuthUser(supabase)
   if ('error' in auth) return auth
 
-  // Check export limit for free plan
+  // Check export limit per plan
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan')
@@ -22,8 +23,21 @@ export async function exportThesisDocxAction(): Promise<{ data?: string; error?:
 
   if (!profile) return { error: 'Profile tidak ditemukan' }
 
-  if (profile.plan === 'free') {
-    return { error: 'Export hanya tersedia di paket Starter atau Full. Upgrade untuk melanjutkan.' }
+  const exportLimit = profile.plan === 'free' ? EXPORT_LIMIT_FREE
+    : profile.plan === 'starter' ? EXPORT_LIMIT_STARTER
+    : null // full = unlimited
+
+  if (exportLimit !== null) {
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+    const { count } = await supabase
+      .from('exports')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', auth.userId)
+      .gte('created_at', startOfMonth)
+
+    if ((count ?? 0) >= exportLimit) {
+      return { error: `Batas export ${exportLimit}x/bulan tercapai. Upgrade paket untuk melanjutkan.` }
+    }
   }
 
   const { data: thesis, error: thesisError } = await supabase

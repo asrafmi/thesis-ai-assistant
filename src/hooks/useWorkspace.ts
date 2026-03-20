@@ -177,7 +177,7 @@ export function useWorkspace(thesisId: string | undefined) {
     },
     onClosePreview: () => setIsPreviewOpen(false),
     onExport: async () => {
-      if (usage?.plan === 'free') {
+      if (usage && usage.exportLimit !== Infinity && usage.exportCount >= usage.exportLimit) {
         setUpgradeModal({ isOpen: true, reason: 'exports' })
         return
       }

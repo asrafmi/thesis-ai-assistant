@@ -3,10 +3,11 @@
 export type Plan = 'free' | 'starter' | 'full'
 
 export const WORD_LIMIT_FREE = 3000
-export const EXPORT_LIMIT_FREE = 0
+export const EXPORT_LIMIT_FREE = 3
 export const THESIS_LIMIT_FREE = 1
 export const DIAGRAM_LIMIT_FREE = 2
 
+export const EXPORT_LIMIT_STARTER = 10
 export const THESIS_LIMIT_STARTER = 1
 export const DIAGRAM_LIMIT_STARTER = 20
 

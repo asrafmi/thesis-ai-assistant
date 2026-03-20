@@ -14,7 +14,7 @@ const plans = [
     ctaVariant: 'outline' as const,
     features: [
       'Batas 3.000 kata/bulan',
-      'Batas 3x export/bulan (.docx saja)',
+      '3x export/bulan',
       '2x generate diagram',
       '1 proyek aktif',
     ],
@@ -33,7 +33,6 @@ const plans = [
       '10x export/bulan',
       '20x generate diagram/bulan',
       '1 proyek aktif',
-      'Export .docx + PDF (unlimited)',
     ],
   },
   {
@@ -48,9 +47,8 @@ const plans = [
     features: [
       'Unlimited kata',
       'Unlimited export',
-      'Unlimited generate diagram (semua jenis)',
-      '3 proyek aktif (proposal + skripsi + cadangan)',
-      'Export .docx + PDF (unlimited)',
+      'Unlimited generate diagram',
+      '3 proyek aktif',
     ],
   },
 ]

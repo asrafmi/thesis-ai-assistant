@@ -55,7 +55,8 @@ export function PromptPanelView({
 
   const isWordLimitReached =
     usage?.plan === 'free' && usage.wordCount >= usage.wordLimit;
-  const isExportLimitReached = usage?.plan === 'free';
+  const isExportLimitReached =
+    usage != null && usage.exportLimit !== Infinity && usage.exportCount >= usage.exportLimit;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -279,51 +280,55 @@ export function PromptPanelView({
         )}
       </div>
 
-      {/* Usage stats — free plan only */}
-      {usage?.plan === 'free' && (
+      {/* Usage stats — show for plans with limits */}
+      {usage && (usage.plan === 'free' || usage.exportLimit !== Infinity) && (
         <div className='px-4 py-3 border-t border-border flex flex-col gap-2.5'>
-          {/* Word usage */}
-          <div className='flex flex-col gap-1'>
+          {/* Word usage — free plan only */}
+          {usage.plan === 'free' && (
+            <div className='flex flex-col gap-1'>
+              <div className='flex items-center justify-between'>
+                <span className='text-[10px] text-muted-foreground uppercase tracking-wider'>
+                  Kata bulan ini
+                </span>
+                <span
+                  className={[
+                    'text-[10px] font-medium tabular-nums',
+                    isWordLimitReached ? 'text-destructive' : 'text-muted-foreground',
+                  ].join(' ')}
+                >
+                  {usage.wordCount.toLocaleString()} / {usage.wordLimit.toLocaleString()}
+                </span>
+              </div>
+              <div className='h-1 rounded-full bg-muted overflow-hidden'>
+                <div
+                  className={[
+                    'h-full rounded-full transition-all',
+                    isWordLimitReached ? 'bg-destructive' : 'bg-primary',
+                  ].join(' ')}
+                  style={{ width: `${Math.min((usage.wordCount / usage.wordLimit) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Export usage — plans with export limits */}
+          {usage.exportLimit !== Infinity && (
             <div className='flex items-center justify-between'>
               <span className='text-[10px] text-muted-foreground uppercase tracking-wider'>
-                Kata bulan ini
+                Sisa export
               </span>
               <span
                 className={[
-                  'text-[10px] font-medium tabular-nums',
-                  isWordLimitReached ? 'text-destructive' : 'text-muted-foreground',
+                  'text-[10px] font-medium',
+                  isExportLimitReached ? 'text-destructive' : 'text-muted-foreground',
                 ].join(' ')}
               >
-                {usage.wordCount.toLocaleString()} / {usage.wordLimit.toLocaleString()}
+                {isExportLimitReached
+                  ? 'Habis — upgrade paket'
+                  : `${usage.exportLimit - usage.exportCount} / ${usage.exportLimit}`}
               </span>
             </div>
-            <div className='h-1 rounded-full bg-muted overflow-hidden'>
-              <div
-                className={[
-                  'h-full rounded-full transition-all',
-                  isWordLimitReached ? 'bg-destructive' : 'bg-primary',
-                ].join(' ')}
-                style={{ width: `${Math.min((usage.wordCount / usage.wordLimit) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Export usage */}
-          <div className='flex items-center justify-between'>
-            <span className='text-[10px] text-muted-foreground uppercase tracking-wider'>
-              Sisa export
-            </span>
-            <span
-              className={[
-                'text-[10px] font-medium',
-                isExportLimitReached ? 'text-destructive' : 'text-muted-foreground',
-              ].join(' ')}
-            >
-              {isExportLimitReached
-                ? 'Habis — upgrade ke Pro'
-                : `${usage.exportLimit - usage.exportCount} / ${usage.exportLimit}`}
-            </span>
-          </div>
+          )}
         </div>
       )}
     </div>

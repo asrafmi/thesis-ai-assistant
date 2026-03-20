@@ -3,7 +3,7 @@
 // SERVER ACTIONS — Usage tracking for free plan limits. No React hooks, no JSX.
 
 import { createClient, getAuthUser } from '@/lib/supabase/server'
-import { WORD_LIMIT_FREE, EXPORT_LIMIT_FREE } from '@/lib/limits'
+import { WORD_LIMIT_FREE, EXPORT_LIMIT_FREE, EXPORT_LIMIT_STARTER } from '@/lib/limits'
 import type { UsageData } from '@/lib/limits'
 
 function isSameMonth(a: Date, b: Date): boolean {
@@ -44,12 +44,16 @@ export async function getUsageAction(): Promise<{ data?: UsageData; error?: stri
     .eq('user_id', auth.userId)
     .gte('created_at', startOfMonth)
 
+  const exportLimit = profile.plan === 'free' ? EXPORT_LIMIT_FREE
+    : profile.plan === 'starter' ? EXPORT_LIMIT_STARTER
+    : Infinity
+
   return {
     data: {
       wordCount,
       wordLimit: WORD_LIMIT_FREE,
       exportCount: exportCount ?? 0,
-      exportLimit: EXPORT_LIMIT_FREE,
+      exportLimit,
       plan: profile.plan,
     },
   }
