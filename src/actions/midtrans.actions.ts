@@ -1,9 +1,15 @@
 'use server'
 
 import { createClient, getAuthUser } from '@/lib/supabase/server'
-import { MIDTRANS_BASE_URL, midtransHeaders, PRO_PLAN_PRICE } from '@/lib/midtrans'
+import { MIDTRANS_BASE_URL, midtransHeaders, STARTER_PLAN_PRICE, FULL_PLAN_PRICE } from '@/lib/midtrans'
+import type { Plan } from '@/lib/limits'
 
-export async function createSnapTransactionAction(): Promise<{
+const PLAN_CONFIG: Record<Exclude<Plan, 'free'>, { price: number; label: string; itemId: string }> = {
+  starter: { price: STARTER_PLAN_PRICE, label: 'SkripsiAI Starter (3 Bulan)', itemId: 'starter-plan' },
+  full: { price: FULL_PLAN_PRICE, label: 'SkripsiAI Full (Semester)', itemId: 'full-plan' },
+}
+
+export async function createSnapTransactionAction(targetPlan: Exclude<Plan, 'free'>): Promise<{
   data?: { token: string; redirectUrl: string }
   error?: string
 }> {
@@ -18,13 +24,16 @@ export async function createSnapTransactionAction(): Promise<{
     .single()
 
   if (!profile) return { error: 'Profil tidak ditemukan' }
-  if (profile.plan === 'pro') return { error: 'Kamu sudah Pro!' }
+  if (profile.plan === targetPlan) return { error: `Kamu sudah di plan ${targetPlan}!` }
+  if (profile.plan === 'full') return { error: 'Kamu sudah di plan tertinggi!' }
+
+  const config = PLAN_CONFIG[targetPlan]
 
   // Get user email
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return { error: 'Email tidak ditemukan' }
 
-  const orderId = `PRO-${auth.userId.slice(0, 8)}-${Date.now()}`
+  const orderId = `${targetPlan.toUpperCase()}-${auth.userId.slice(0, 8)}-${Date.now()}`
 
   const response = await fetch(`${MIDTRANS_BASE_URL}/transactions`, {
     method: 'POST',
@@ -32,13 +41,13 @@ export async function createSnapTransactionAction(): Promise<{
     body: JSON.stringify({
       transaction_details: {
         order_id: orderId,
-        gross_amount: PRO_PLAN_PRICE,
+        gross_amount: config.price,
       },
       item_details: [
         {
-          id: 'pro-plan',
-          name: 'SkripsiAI Pro Plan',
-          price: PRO_PLAN_PRICE,
+          id: config.itemId,
+          name: config.label,
+          price: config.price,
           quantity: 1,
         },
       ],
@@ -63,7 +72,7 @@ export async function createSnapTransactionAction(): Promise<{
     user_id: auth.userId,
     order_id: orderId,
     snap_token: result.token,
-    amount: PRO_PLAN_PRICE,
+    amount: config.price,
     status: 'pending',
   })
 

@@ -21,5 +21,5 @@ export const midtransHeaders = {
   Authorization: `Basic ${authString}`,
 }
 
-// Price is in @/lib/limits.ts (shared client/server)
-export { PRO_PLAN_PRICE } from './limits'
+// Prices are in @/lib/limits.ts (shared client/server)
+export { STARTER_PLAN_PRICE, FULL_PLAN_PRICE } from './limits'

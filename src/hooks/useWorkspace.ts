@@ -70,7 +70,7 @@ export function useWorkspace(thesisId: string | undefined) {
     async (prompt: string) => {
       if (!activeSectionId || !thesis) return
 
-      // Block and show upgrade modal if free word limit reached
+      // Block and show upgrade modal if word limit reached (free plan only)
       if (usage?.plan === 'free' && usage.wordCount >= usage.wordLimit) {
         setUpgradeModal({ isOpen: true, reason: 'words' })
         return
@@ -177,7 +177,7 @@ export function useWorkspace(thesisId: string | undefined) {
     },
     onClosePreview: () => setIsPreviewOpen(false),
     onExport: async () => {
-      if (usage?.plan === 'free' && (usage.exportCount ?? 0) >= usage.exportLimit) {
+      if (usage?.plan === 'free') {
         setUpgradeModal({ isOpen: true, reason: 'exports' })
         return
       }

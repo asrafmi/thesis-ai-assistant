@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { getProfileAction } from '@/actions/profile.actions'
 import { createSnapTransactionAction } from '@/actions/midtrans.actions'
 import type { Profile } from '@/types/thesis.types'
+import type { Plan } from '@/lib/limits'
+
 const IS_PRODUCTION = process.env.NODE_ENV === 'production'
 const SNAP_URL = IS_PRODUCTION
   ? 'https://app.midtrans.com/snap/snap.js'
@@ -61,11 +63,11 @@ export function useSettings() {
     document.head.appendChild(script)
   }, [])
 
-  async function handleUpgrade() {
+  async function handleUpgrade(targetPlan: Exclude<Plan, 'free'>) {
     setIsUpgrading(true)
     setPaymentStatus(null)
 
-    const result = await createSnapTransactionAction()
+    const result = await createSnapTransactionAction(targetPlan)
 
     if (result.error || !result.data) {
       setPaymentStatus('error')
@@ -77,7 +79,6 @@ export function useSettings() {
       onSuccess: () => {
         setPaymentStatus('success')
         setIsUpgrading(false)
-        // Refetch profile to get updated plan
         fetchProfile()
       },
       onPending: () => {

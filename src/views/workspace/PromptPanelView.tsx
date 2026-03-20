@@ -55,8 +55,7 @@ export function PromptPanelView({
 
   const isWordLimitReached =
     usage?.plan === 'free' && usage.wordCount >= usage.wordLimit;
-  const isExportLimitReached =
-    usage?.plan === 'free' && usage.exportCount >= usage.exportLimit;
+  const isExportLimitReached = usage?.plan === 'free';
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

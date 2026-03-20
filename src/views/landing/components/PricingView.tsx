@@ -13,27 +13,44 @@ const plans = [
     ctaHref: '/register',
     ctaVariant: 'outline' as const,
     features: [
-      'Batas 5.000 kata per bulan',
-      'Batas 3x export .docx',
-      'Struktur skripsi standar',
-      'AI writing assistant',
+      'Batas 3.000 kata/bulan',
+      'Batas 3x export/bulan (.docx saja)',
+      '2x generate diagram',
+      '1 proyek aktif',
     ],
   },
   {
-    name: 'Pro',
-    price: 'Rp 49.900',
-    period: 'sekali bayar',
-    description: 'Untuk mahasiswa yang serius menyelesaikan skripsi',
+    name: 'Starter',
+    price: 'Rp 79.000',
+    period: '3 bulan',
+    description: 'Untuk mahasiswa yang mulai serius menulis',
+    badge: null,
+    cta: 'Daftar & Upgrade',
+    ctaHref: '/register',
+    ctaVariant: 'outline' as const,
+    features: [
+      'Unlimited kata',
+      '10x export/bulan',
+      '20x generate diagram/bulan',
+      '1 proyek aktif',
+      'Export .docx + PDF (unlimited)',
+    ],
+  },
+  {
+    name: 'Full',
+    price: 'Rp 149.000',
+    period: 'semester',
+    description: 'Paket lengkap untuk menyelesaikan skripsi',
     badge: 'Paling Populer',
     cta: 'Daftar & Upgrade',
     ctaHref: '/register',
     ctaVariant: 'primary' as const,
     features: [
-      'Kata tidak terbatas',
-      'Export .docx tidak terbatas',
-      'Riwayat revisi lengkap',
-      'Prioritas dalam antrian AI',
-      'Dukungan prioritas',
+      'Unlimited kata',
+      'Unlimited export',
+      'Unlimited generate diagram (semua jenis)',
+      '3 proyek aktif (proposal + skripsi + cadangan)',
+      'Export .docx + PDF (unlimited)',
     ],
   },
 ]
@@ -51,7 +68,7 @@ const cardVariants = {
 export function PricingView() {
   return (
     <section id="harga" className="px-6 py-24">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {/* Heading */}
         <motion.div
           className="mb-16 text-center"
@@ -70,7 +87,7 @@ export function PricingView() {
 
         {/* Cards */}
         <motion.div
-          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

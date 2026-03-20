@@ -72,11 +72,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
   }
 
-  // Upgrade user to pro on successful payment
-  if (status === 'settlement' && transaction) {
+  // Determine target plan from order_id prefix
+  const targetPlan = order_id.startsWith('FULL-') ? 'full'
+    : order_id.startsWith('STARTER-') ? 'starter'
+    : order_id.startsWith('PRO-') ? 'starter' // legacy PRO orders map to starter
+    : null
+
+  // Upgrade user on successful payment
+  if (status === 'settlement' && transaction && targetPlan) {
     await supabase
       .from('profiles')
-      .update({ plan: 'pro' })
+      .update({ plan: targetPlan })
       .eq('id', transaction.user_id)
   }
 

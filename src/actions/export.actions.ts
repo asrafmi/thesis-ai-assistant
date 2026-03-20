@@ -5,7 +5,7 @@
 import { createClient, getAuthUser } from '@/lib/supabase/server'
 import { buildSectionTree } from '@/services/section.service'
 import { buildDocxFromThesis } from '@/services/docx.service'
-import { EXPORT_LIMIT_FREE } from '@/lib/limits'
+
 import type { Section } from '@/types/thesis.types'
 
 export async function exportThesisDocxAction(): Promise<{ data?: string; error?: string }> {
@@ -23,17 +23,7 @@ export async function exportThesisDocxAction(): Promise<{ data?: string; error?:
   if (!profile) return { error: 'Profile tidak ditemukan' }
 
   if (profile.plan === 'free') {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-    const { count: exportCount } = await supabase
-      .from('exports')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', auth.userId)
-      .gte('created_at', startOfMonth)
-
-    if ((exportCount ?? 0) >= EXPORT_LIMIT_FREE) {
-      return { error: 'Batas 3 export bulanan tercapai. Upgrade ke Pro untuk melanjutkan.' }
-    }
+    return { error: 'Export hanya tersedia di paket Starter atau Full. Upgrade untuk melanjutkan.' }
   }
 
   const { data: thesis, error: thesisError } = await supabase

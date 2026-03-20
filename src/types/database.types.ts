@@ -327,7 +327,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      plan: "free" | "pro"
+      plan: "free" | "starter" | "full"
       reference_style: "apa" | "ieee" | "mendeley"
       revision_source: "ai" | "user"
       template_type: "quantitative" | "qualitative"

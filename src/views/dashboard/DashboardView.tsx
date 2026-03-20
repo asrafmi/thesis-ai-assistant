@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Plus, FileText, Trash2, Calendar, GraduationCap, Loader2 } from 'lucide-react'
 import type { Thesis } from '@/types/thesis.types'
+import type { Plan } from '@/lib/limits'
 import type { UpgradeReason } from '@/components/UpgradeModal'
 import { UpgradeModal } from '@/components/UpgradeModal'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -12,7 +13,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 interface DashboardViewProps {
   theses: Thesis[]
   isLoading: boolean
-  plan: 'free' | 'pro'
+  plan: Plan
   canCreateThesis: boolean
   onOpenThesis: (thesisId: string) => void
   onCreateThesis: () => void
@@ -144,7 +145,10 @@ export function DashboardView({
           <div>
             <h1 className='text-2xl font-bold text-foreground'>Skripsi Saya</h1>
             <p className='mt-1 text-sm text-muted-foreground'>
-              {plan === 'free' ? `${theses.length}/1 skripsi (Paket Gratis)` : `${theses.length} skripsi`}
+              {plan === 'free' ? `${theses.length}/1 proyek (Paket Gratis)`
+                : plan === 'starter' ? `${theses.length}/1 proyek (Starter)`
+                : plan === 'full' ? `${theses.length}/3 proyek (Full)`
+                : `${theses.length} proyek`}
             </p>
           </div>
           <button
