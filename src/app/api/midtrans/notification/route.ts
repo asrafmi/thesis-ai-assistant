@@ -18,6 +18,7 @@ function verifySignature(orderId: string, statusCode: string, grossAmount: strin
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
+  console.log('Received Midtrans notification:', body)
 
   const {
     order_id,
@@ -34,8 +35,10 @@ export async function POST(req: NextRequest) {
   if (signature_key !== expectedSignature) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
   }
+  console.log('Signature verified successfully')
 
   const supabase = getServiceSupabase()
+  console.log('Supabase client initialized successfully')
 
   // Map Midtrans status to our enum
   let status: 'pending' | 'settlement' | 'expire' | 'cancel' | 'deny' | 'refund' = 'pending'
@@ -67,6 +70,7 @@ export async function POST(req: NextRequest) {
     .select('user_id')
     .single()
 
+  console.log('Transaction update result:', { transaction, error })
   if (error) {
     console.error('Error updating transaction:', error)
     return NextResponse.json({ error: 'Failed to update transaction' }, { status: 500 })
@@ -75,23 +79,39 @@ export async function POST(req: NextRequest) {
   // Determine target plan from order_id prefix
   const targetPlan = order_id.startsWith('FULL-') ? 'full'
     : order_id.startsWith('STARTER-') ? 'starter'
-    : order_id.startsWith('PRO-') ? 'starter' // legacy PRO orders map to starter
-    : null
+      : order_id.startsWith('PRO-') ? 'starter' // legacy PRO orders map to starter
+        : null
 
   // Upgrade user on successful payment
   if (status === 'settlement' && transaction && targetPlan) {
-    await supabase
+    const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
       .update({ plan: targetPlan })
       .eq('id', transaction.user_id)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error('Error updating user plan:', updateError)
+    } else {
+      console.log('User plan updated successfully:', updatedProfile)
+    }
   }
 
   // Downgrade back to free on refund
   if (status === 'refund' && transaction) {
-    await supabase
+    const { data: downgradedProfile, error: downgradeError } = await supabase
       .from('profiles')
       .update({ plan: 'free' })
       .eq('id', transaction.user_id)
+      .select()
+      .single()
+
+    if (downgradeError) {
+      console.error('Error downgrading user plan:', downgradeError)
+    } else {
+      console.log('User plan downgraded successfully:', downgradedProfile)
+    }
   }
 
   return NextResponse.json({ status: 'ok' })

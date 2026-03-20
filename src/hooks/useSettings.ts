@@ -64,6 +64,18 @@ export function useSettings() {
     document.head.appendChild(script)
   }, [])
 
+  async function pollForPlanUpdate(targetPlan: Exclude<Plan, 'free'>) {
+    for (let i = 0; i < 10; i++) {
+      await new Promise((r) => setTimeout(r, 1500))
+      const res = await getProfileAction()
+      if (res.data?.plan === targetPlan) {
+        setProfile(res.data)
+        window.dispatchEvent(new Event('usage-changed'))
+        return
+      }
+    }
+  }
+
   async function handleUpgrade(targetPlan: Exclude<Plan, 'free'>) {
     setIsUpgrading(true)
     setPaymentStatus(null)
@@ -77,22 +89,12 @@ export function useSettings() {
     }
 
     window.snap.pay(result.data.token, {
-      onSuccess: async () => {
+      onSuccess: () => {
         setUpgradedPlan(targetPlan)
-        setIsUpgrading(false)
-
-        // Poll until webhook updates the plan in DB
-        for (let i = 0; i < 10; i++) {
-          const res = await getProfileAction()
-          if (res.data?.plan === targetPlan) {
-            setProfile(res.data)
-            break
-          }
-          await new Promise((r) => setTimeout(r, 1500))
-        }
-
         setPaymentStatus('success')
-        window.dispatchEvent(new Event('usage-changed'))
+        setIsUpgrading(false)
+        // Poll in background until webhook updates plan in DB
+        pollForPlanUpdate(targetPlan)
       },
       onPending: () => {
         setPaymentStatus('pending')
@@ -103,6 +105,7 @@ export function useSettings() {
         setIsUpgrading(false)
       },
       onClose: () => {
+        // Only reset if no success/pending already set (user just closed without paying)
         setIsUpgrading(false)
       },
     })

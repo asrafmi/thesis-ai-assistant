@@ -333,7 +333,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      plan: "free" | "starter" | "full"
+      plan: "free" | "pro" | "starter" | "full"
       reference_style: "apa" | "ieee" | "mendeley"
       revision_source: "ai" | "user"
       template_type: "quantitative" | "qualitative"
@@ -472,7 +472,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      plan: ["free", "starter", "full"],
+      plan: ["free", "pro", "starter", "full"],
       reference_style: ["apa", "ieee", "mendeley"],
       revision_source: ["ai", "user"],
       template_type: ["quantitative", "qualitative"],
