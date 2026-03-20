@@ -281,7 +281,7 @@ export function PromptPanelView({
       </div>
 
       {/* Usage stats — show for plans with limits */}
-      {usage && (usage.plan === 'free' || usage.exportLimit !== Infinity) && (
+      {usage && (usage.plan === 'free' || usage.exportLimit !== Infinity || usage.diagramLimit !== Infinity) && (
         <div className='px-4 py-3 border-t border-border flex flex-col gap-2.5'>
           {/* Word usage — free plan only */}
           {usage.plan === 'free' && (
@@ -308,6 +308,25 @@ export function PromptPanelView({
                   style={{ width: `${Math.min((usage.wordCount / usage.wordLimit) * 100, 100)}%` }}
                 />
               </div>
+            </div>
+          )}
+
+          {/* Diagram usage — plans with diagram limits */}
+          {usage.diagramLimit !== Infinity && (
+            <div className='flex items-center justify-between'>
+              <span className='text-[10px] text-muted-foreground uppercase tracking-wider'>
+                Sisa diagram
+              </span>
+              <span
+                className={[
+                  'text-[10px] font-medium',
+                  usage.diagramCount >= usage.diagramLimit ? 'text-destructive' : 'text-muted-foreground',
+                ].join(' ')}
+              >
+                {usage.diagramCount >= usage.diagramLimit
+                  ? 'Habis — upgrade paket'
+                  : `${usage.diagramLimit - usage.diagramCount} / ${usage.diagramLimit}`}
+              </span>
             </div>
           )}
 

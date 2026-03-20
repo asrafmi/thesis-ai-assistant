@@ -25,5 +25,7 @@ export interface UsageData {
   wordLimit: number
   exportCount: number
   exportLimit: number
+  diagramCount: number
+  diagramLimit: number
   plan: Plan
 }

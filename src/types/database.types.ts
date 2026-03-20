@@ -55,6 +55,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          diagram_count: number
+          diagram_count_reset_at: string | null
           full_name: string | null
           id: string
           nim: string | null
@@ -63,6 +65,8 @@ export type Database = {
           word_count_reset_at: string | null
         }
         Insert: {
+          diagram_count?: number
+          diagram_count_reset_at?: string | null
           full_name?: string | null
           id: string
           nim?: string | null
@@ -71,6 +75,8 @@ export type Database = {
           word_count_reset_at?: string | null
         }
         Update: {
+          diagram_count?: number
+          diagram_count_reset_at?: string | null
           full_name?: string | null
           id?: string
           nim?: string | null
@@ -466,7 +472,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      plan: ["free", "pro"],
+      plan: ["free", "starter", "full"],
       reference_style: ["apa", "ieee", "mendeley"],
       revision_source: ["ai", "user"],
       template_type: ["quantitative", "qualitative"],

@@ -16,5 +16,12 @@ export function useUsage() {
     fetchUsage()
   }, [fetchUsage])
 
+  // Refetch when any component signals usage changed
+  useEffect(() => {
+    function handleUsageChanged() { fetchUsage() }
+    window.addEventListener('usage-changed', handleUsageChanged)
+    return () => window.removeEventListener('usage-changed', handleUsageChanged)
+  }, [fetchUsage])
+
   return { usage, refetchUsage: fetchUsage }
 }
