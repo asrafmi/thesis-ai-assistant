@@ -13,10 +13,11 @@ import { Crown, Sparkles, ArrowRight } from 'lucide-react'
 
 interface PaymentSuccessModalProps {
   open: boolean
+  planName: string
   onOpenChange: (open: boolean) => void
 }
 
-export function PaymentSuccessModal({ open, onOpenChange }: PaymentSuccessModalProps) {
+export function PaymentSuccessModal({ open, planName, onOpenChange }: PaymentSuccessModalProps) {
   const router = useRouter()
   const [countdown, setCountdown] = useState(5)
 
@@ -79,10 +80,10 @@ export function PaymentSuccessModal({ open, onOpenChange }: PaymentSuccessModalP
           </div>
 
           <DialogTitle className="mt-6 text-center text-xl font-bold">
-            Selamat! Kamu sekarang Pro!
+            Selamat! Kamu sekarang {planName}!
           </DialogTitle>
           <DialogDescription className="mt-2 text-center text-muted-foreground">
-            Akses penuh ke semua fitur SkripsiAI sudah aktif. Selamat mengerjakan skripsi!
+            Paket {planName} sudah aktif. Selamat mengerjakan skripsi!
           </DialogDescription>
 
           <Button

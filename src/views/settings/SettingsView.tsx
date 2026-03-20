@@ -13,6 +13,7 @@ interface SettingsViewProps {
   isLoading: boolean
   isUpgrading: boolean
   paymentStatus: 'success' | 'pending' | 'error' | null
+  upgradedPlan: Exclude<Plan, 'free'> | null
   onUpgrade: (targetPlan: Exclude<Plan, 'free'>) => void
   onPaymentStatusChange: (status: 'success' | 'pending' | 'error' | null) => void
 }
@@ -82,6 +83,7 @@ export function SettingsView({
   isLoading,
   isUpgrading,
   paymentStatus,
+  upgradedPlan,
   onUpgrade,
   onPaymentStatusChange,
 }: SettingsViewProps) {
@@ -178,6 +180,7 @@ export function SettingsView({
       {/* Payment Success Modal */}
       <PaymentSuccessModal
         open={paymentStatus === 'success'}
+        planName={upgradedPlan === 'full' ? 'Full' : upgradedPlan === 'starter' ? 'Starter' : 'Pro'}
         onOpenChange={(open) => { if (!open) onPaymentStatusChange(null) }}
       />
       {paymentStatus === 'pending' && (

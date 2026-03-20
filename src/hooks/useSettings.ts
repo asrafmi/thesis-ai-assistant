@@ -31,6 +31,7 @@ export function useSettings() {
   const [isLoading, setIsLoading] = useState(true)
   const [isUpgrading, setIsUpgrading] = useState(false)
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'pending' | 'error' | null>(null)
+  const [upgradedPlan, setUpgradedPlan] = useState<Exclude<Plan, 'free'> | null>(null)
   const searchParams = useSearchParams()
 
   // Handle redirect from Midtrans
@@ -76,10 +77,22 @@ export function useSettings() {
     }
 
     window.snap.pay(result.data.token, {
-      onSuccess: () => {
-        setPaymentStatus('success')
+      onSuccess: async () => {
+        setUpgradedPlan(targetPlan)
         setIsUpgrading(false)
-        fetchProfile()
+
+        // Poll until webhook updates the plan in DB
+        for (let i = 0; i < 10; i++) {
+          const res = await getProfileAction()
+          if (res.data?.plan === targetPlan) {
+            setProfile(res.data)
+            break
+          }
+          await new Promise((r) => setTimeout(r, 1500))
+        }
+
+        setPaymentStatus('success')
+        window.dispatchEvent(new Event('usage-changed'))
       },
       onPending: () => {
         setPaymentStatus('pending')
@@ -100,6 +113,7 @@ export function useSettings() {
     isLoading,
     isUpgrading,
     paymentStatus,
+    upgradedPlan,
     handleUpgrade,
     setPaymentStatus,
   }
