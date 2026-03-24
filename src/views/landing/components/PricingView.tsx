@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-const WA_PRO_URL = `https://api.whatsapp.com/send?phone=6282245101283&text=${encodeURIComponent('Halo, saya tertarik dengan Plan Pro SkripsiAI. Bisa bantu saya untuk berlangganan?')}`
-
 const plans = [
   {
     name: 'Gratis',
@@ -13,31 +11,44 @@ const plans = [
     badge: null,
     cta: 'Mulai Gratis',
     ctaHref: '/register',
-    ctaExternal: false,
     ctaVariant: 'outline' as const,
     features: [
-      'Batas 5.000 kata per bulan',
-      'Batas 3x export .docx',
-      'Struktur skripsi standar',
-      'AI writing assistant',
+      'Batas 3.000 kata/bulan',
+      '3x export/bulan',
+      '2x generate diagram',
+      '1 proyek aktif',
     ],
   },
   {
-    name: 'Pro',
-    price: 'Rp 49.000',
-    period: 'per bulan',
-    description: 'Untuk mahasiswa yang serius menyelesaikan skripsi',
+    name: 'Starter',
+    price: 'Rp 79.000',
+    period: '3 bulan',
+    description: 'Untuk mahasiswa yang mulai serius menulis',
+    badge: null,
+    cta: 'Daftar & Upgrade',
+    ctaHref: '/register?plan=starter',
+    ctaVariant: 'outline' as const,
+    features: [
+      'Unlimited kata',
+      '10x export/bulan',
+      '20x generate diagram/bulan',
+      '1 proyek aktif',
+    ],
+  },
+  {
+    name: 'Full',
+    price: 'Rp 149.000',
+    period: 'semester',
+    description: 'Paket lengkap untuk menyelesaikan skripsi',
     badge: 'Paling Populer',
-    cta: 'Hubungi via WhatsApp',
-    ctaHref: WA_PRO_URL,
-    ctaExternal: true,
+    cta: 'Daftar & Upgrade',
+    ctaHref: '/register?plan=full',
     ctaVariant: 'primary' as const,
     features: [
-      'Kata tidak terbatas',
-      'Export .docx tidak terbatas',
-      'Riwayat revisi lengkap',
-      'Prioritas dalam antrian AI',
-      'Dukungan prioritas',
+      'Unlimited kata',
+      'Unlimited export',
+      'Unlimited generate diagram',
+      '3 proyek aktif',
     ],
   },
 ]
@@ -55,7 +66,7 @@ const cardVariants = {
 export function PricingView() {
   return (
     <section id="harga" className="px-6 py-24">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         {/* Heading */}
         <motion.div
           className="mb-16 text-center"
@@ -74,7 +85,7 @@ export function PricingView() {
 
         {/* Cards */}
         <motion.div
-          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -118,8 +129,6 @@ export function PricingView() {
 
               <Link
                 href={plan.ctaHref}
-                target={plan.ctaExternal ? '_blank' : undefined}
-                rel={plan.ctaExternal ? 'noopener noreferrer' : undefined}
                 className={`block w-full rounded-lg px-4 py-3 text-center text-sm font-medium transition-colors ${
                   plan.ctaVariant === 'primary'
                     ? 'bg-blue-600 text-white hover:bg-blue-500'

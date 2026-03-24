@@ -1,6 +1,12 @@
 'use server'
 
 import { getAnthropicClient } from '@/lib/anthropic'
+import { createClient, getAuthUser } from '@/lib/supabase/server'
+import { DIAGRAM_LIMIT_FREE, DIAGRAM_LIMIT_STARTER } from '@/lib/limits'
+
+function isSameMonth(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()
+}
 
 export async function generateDiagramAction(params: {
   prompt: string
@@ -8,6 +14,40 @@ export async function generateDiagramAction(params: {
   sectionContent?: string
 }): Promise<{ data?: string; error?: string }> {
   try {
+    const supabase = await createClient()
+    const auth = await getAuthUser(supabase)
+    if ('error' in auth) return auth
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, diagram_count, diagram_count_reset_at')
+      .eq('id', auth.userId)
+      .single()
+
+    if (!profile) return { error: 'Profile tidak ditemukan' }
+
+    const now = new Date()
+    const resetAt = profile.diagram_count_reset_at ? new Date(profile.diagram_count_reset_at) : null
+    let currentCount = profile.diagram_count
+
+    // Reset if new month
+    if (!resetAt || !isSameMonth(resetAt, now)) {
+      currentCount = 0
+      await supabase
+        .from('profiles')
+        .update({ diagram_count: 0, diagram_count_reset_at: now.toISOString() })
+        .eq('id', auth.userId)
+    }
+
+    // Check limit per plan
+    const limit = profile.plan === 'free' ? DIAGRAM_LIMIT_FREE
+      : profile.plan === 'starter' ? DIAGRAM_LIMIT_STARTER
+      : null // full = unlimited
+
+    if (limit !== null && currentCount >= limit) {
+      return { error: `Batas generate diagram ${limit}x/bulan tercapai. Upgrade paket untuk melanjutkan.` }
+    }
+
     const systemPrompt = `Kamu adalah generator Mermaid.js diagram. Kamu HANYA boleh output Mermaid code yang valid.
 
 ATURAN MUTLAK:
@@ -31,6 +71,13 @@ ${params.sectionContent ? `\nIsi konten bagian:\n${params.sectionContent}` : ''}
     })
 
     const text = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+
+    // Increment diagram count
+    await supabase
+      .from('profiles')
+      .update({ diagram_count: currentCount + 1 })
+      .eq('id', auth.userId)
+
     return { data: text }
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Gagal generate diagram.' }

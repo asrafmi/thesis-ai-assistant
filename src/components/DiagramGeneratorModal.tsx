@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { generateDiagramAction } from '@/actions/diagram.actions'
 import { generateCaptionAction } from '@/actions/caption.actions'
-import { Code2, Image as ImageIcon } from 'lucide-react'
+import { getUsageAction } from '@/actions/usage.actions'
+import { Code2, Image as ImageIcon, Zap } from 'lucide-react'
 
 interface DiagramGeneratorModalProps {
   open: boolean
@@ -39,6 +41,7 @@ export function DiagramGeneratorModal({
   sectionTitle,
   sectionContent,
 }: DiagramGeneratorModalProps) {
+  const router = useRouter()
   const [prompt, setPrompt] = useState('')
   const [mermaidCode, setMermaidCode] = useState('')
   const [svgOutput, setSvgOutput] = useState('')
@@ -46,10 +49,21 @@ export function DiagramGeneratorModal({
   const [isRendering, setIsRendering] = useState(false)
   const [showCode, setShowCode] = useState(false)
   const [error, setError] = useState('')
+  const [diagramCount, setDiagramCount] = useState(0)
+  const [diagramLimit, setDiagramLimit] = useState(Infinity)
   const previewRef = useRef<HTMLDivElement>(null)
 
+  const isLimitReached = diagramLimit !== Infinity && diagramCount >= diagramLimit
+
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      getUsageAction().then((res) => {
+        if (res.data) {
+          setDiagramCount(res.data.diagramCount)
+          setDiagramLimit(res.data.diagramLimit)
+        }
+      })
+    } else {
       setPrompt('')
       setMermaidCode('')
       setSvgOutput('')
@@ -95,6 +109,8 @@ export function DiagramGeneratorModal({
       setError(result.error)
     } else if (result.data) {
       setMermaidCode(result.data)
+      setDiagramCount((c) => c + 1)
+      window.dispatchEvent(new Event('usage-changed'))
     }
 
     setIsLoading(false)
@@ -154,11 +170,39 @@ export function DiagramGeneratorModal({
         </DialogHeader>
 
         <div className="flex flex-col gap-3 flex-1 overflow-hidden">
+          {/* Limit reached banner */}
+          {isLimitReached && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+              <Zap size={16} className="text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Batas diagram tercapai</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Kamu sudah menggunakan {diagramCount}/{diagramLimit} generate diagram bulan ini. Upgrade paket untuk melanjutkan.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { onClose(); router.push('/settings') }}
+                  className="mt-2 text-xs font-medium text-primary hover:underline"
+                >
+                  Lihat Paket
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Usage indicator */}
+          {!isLimitReached && diagramLimit !== Infinity && (
+            <p className="text-xs text-muted-foreground">
+              Sisa generate: {diagramLimit - diagramCount}/{diagramLimit} bulan ini
+            </p>
+          )}
+
           <Textarea
             placeholder="Deskripsikan diagram yang kamu inginkan... contoh: diagram alir metodologi penelitian kuantitatif dengan 5 tahap"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={3}
+            disabled={isLimitReached}
             className="resize-none text-sm focus-visible:ring-0 focus-visible:border-ring"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleGenerate()
@@ -217,7 +261,7 @@ export function DiagramGeneratorModal({
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={isLoading || isRendering || !prompt.trim()}
+            disabled={isLoading || isRendering || !prompt.trim() || isLimitReached}
             size="sm"
             variant={hasResult ? 'outline' : 'default'}
           >

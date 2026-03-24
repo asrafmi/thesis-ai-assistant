@@ -53,28 +53,84 @@ export type Database = {
           },
         ]
       }
+      payment_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          plan: string
+          proof_image_url: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_request_status"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          plan: string
+          proof_image_url: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          plan?: string
+          proof_image_url?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          diagram_count: number
+          diagram_count_reset_at: string | null
           full_name: string | null
           id: string
           nim: string | null
           plan: Database["public"]["Enums"]["plan"]
+          plan_expires_at: string | null
           word_count: number
           word_count_reset_at: string | null
         }
         Insert: {
+          diagram_count?: number
+          diagram_count_reset_at?: string | null
           full_name?: string | null
           id: string
           nim?: string | null
           plan?: Database["public"]["Enums"]["plan"]
+          plan_expires_at?: string | null
           word_count?: number
           word_count_reset_at?: string | null
         }
         Update: {
+          diagram_count?: number
+          diagram_count_reset_at?: string | null
           full_name?: string | null
           id?: string
           nim?: string | null
           plan?: Database["public"]["Enums"]["plan"]
+          plan_expires_at?: string | null
           word_count?: number
           word_count_reset_at?: string | null
         }
@@ -272,6 +328,53 @@ export type Database = {
           },
         ]
       }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          midtrans_response: Json | null
+          order_id: string
+          payment_type: string | null
+          snap_token: string
+          status: Database["public"]["Enums"]["transaction_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          midtrans_response?: Json | null
+          order_id: string
+          payment_type?: string | null
+          snap_token: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          midtrans_response?: Json | null
+          order_id?: string
+          payment_type?: string | null
+          snap_token?: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -280,11 +383,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      plan: "free" | "pro"
+      payment_request_status: "pending" | "approved" | "rejected"
+      plan: "free" | "pro" | "starter" | "full"
       reference_style: "apa" | "ieee" | "mendeley"
       revision_source: "ai" | "user"
       template_type: "quantitative" | "qualitative"
       thesis_status: "draft" | "complete"
+      transaction_status:
+        | "pending"
+        | "settlement"
+        | "expire"
+        | "cancel"
+        | "deny"
+        | "refund"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -412,11 +523,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      plan: ["free", "pro"],
+      payment_request_status: ["pending", "approved", "rejected"],
+      plan: ["free", "pro", "starter", "full"],
       reference_style: ["apa", "ieee", "mendeley"],
       revision_source: ["ai", "user"],
       template_type: ["quantitative", "qualitative"],
       thesis_status: ["draft", "complete"],
+      transaction_status: [
+        "pending",
+        "settlement",
+        "expire",
+        "cancel",
+        "deny",
+        "refund",
+      ],
     },
   },
 } as const
