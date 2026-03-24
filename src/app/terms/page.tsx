@@ -105,7 +105,82 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">8. Lisensi Penggunaan</h2>
+            <h2 className="text-lg font-semibold">8. Langganan & Pembayaran</h2>
+            <p>
+              SkripsiAI menawarkan paket langganan berbayar (Pro) dengan periode 3 bulan dan 6 bulan.
+              Dengan berlangganan, Anda menyetujui hal-hal berikut:
+            </p>
+            <ul className="list-disc pl-6 space-y-1.5 text-sm text-muted-foreground">
+              <li>
+                Pembayaran diproses melalui penyedia layanan pembayaran pihak ketiga yang kami tunjuk.
+              </li>
+              <li>
+                Akses Pro akan aktif segera setelah pembayaran berhasil dikonfirmasi dan berlaku
+                sesuai periode langganan yang dipilih.
+              </li>
+              <li>
+                Apabila pembayaran gagal atau tidak dapat diproses, akses Pro tidak akan diaktifkan
+                hingga pembayaran berhasil diselesaikan.
+              </li>
+              <li>
+                Setelah periode langganan berakhir, akun Anda akan otomatis kembali ke paket Free
+                kecuali Anda memperpanjang langganan.
+              </li>
+              <li>
+                SkripsiAI berhak mengubah harga langganan dengan pemberitahuan sebelumnya. Perubahan
+                harga tidak berlaku untuk periode langganan yang sedang berjalan.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold">9. Kebijakan Pengembalian Dana</h2>
+            <p>
+              Layanan SkripsiAI merupakan produk digital yang langsung dapat digunakan setelah
+              pembayaran dikonfirmasi. Oleh karena itu, semua pembayaran bersifat final dan tidak
+              dapat dikembalikan (non-refundable). Dengan melakukan pembayaran, Anda memahami dan
+              menyetujui bahwa tidak ada pengembalian dana dalam kondisi apa pun, termasuk namun
+              tidak terbatas pada ketidakpuasan terhadap layanan, pembatalan langganan sebelum
+              periode berakhir, atau pelanggaran Syarat dan Ketentuan yang mengakibatkan penangguhan
+              akun.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold">10. Larangan Penggunaan</h2>
+            <p>
+              Anda dilarang menggunakan SkripsiAI untuk tujuan berikut:
+            </p>
+            <ul className="list-disc pl-6 space-y-1.5 text-sm text-muted-foreground">
+              <li>
+                <strong>Plagiarisme:</strong> Menyalin atau mengklaim hasil AI sebagai karya
+                sepenuhnya milik Anda tanpa proses penyuntingan, validasi, dan kontribusi intelektual
+                yang memadai.
+              </li>
+              <li>
+                <strong>Kecurangan Akademik:</strong> Menggunakan layanan untuk menyelesaikan tugas
+                akademik dengan cara yang melanggar kebijakan integritas akademik institusi Anda.
+              </li>
+              <li>
+                <strong>Penyalahgunaan AI:</strong> Menghasilkan konten yang menyesatkan, memalsukan
+                data penelitian, atau membuat referensi fiktif.
+              </li>
+              <li>
+                <strong>Aktivitas Ilegal:</strong> Menggunakan layanan untuk tujuan yang melanggar
+                hukum yang berlaku di Indonesia.
+              </li>
+            </ul>
+            <p>
+              SkripsiAI dirancang sebagai alat bantu penulisan, bukan pengganti proses berpikir
+              akademik. Pengguna bertanggung jawab penuh atas penggunaan konten yang dihasilkan
+              dan wajib memastikan kepatuhan terhadap kebijakan integritas akademik institusi
+              masing-masing. SkripsiAI berhak menangguhkan atau menghentikan akun yang melanggar
+              ketentuan ini tanpa pengembalian dana.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold">11. Lisensi Penggunaan</h2>
             <p>
               SkripsiAI memberikan Anda hak untuk mengakses dan menggunakan platform perangkat
               lunak semata-mata untuk keperluan penulisan skripsi Anda. Hak ini bersifat
@@ -119,7 +194,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">9. Ganti Rugi</h2>
+            <h2 className="text-lg font-semibold">12. Ganti Rugi</h2>
             <p>
               Anda setuju untuk mengganti rugi, membela, dan membebaskan SkripsiAI dari dan
               terhadap semua klaim pihak ketiga, kewajiban, kerusakan, kerugian, atau biaya
@@ -129,7 +204,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">10. Penafian</h2>
+            <h2 className="text-lg font-semibold">13. Penafian</h2>
             <p>
               SkripsiAI tidak bertanggung jawab atas akurasi, kebenaran, ketepatan waktu, atau
               konten materi yang disediakan di Situs ini. Anda tidak boleh berasumsi bahwa materi
@@ -140,14 +215,14 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">11. Hukum yang Berlaku</h2>
+            <h2 className="text-lg font-semibold">14. Hukum yang Berlaku</h2>
             <p>
               Syarat dan Ketentuan ini diatur oleh hukum yang berlaku di Indonesia.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">12. Pertanyaan dan Umpan Balik</h2>
+            <h2 className="text-lg font-semibold">15. Pertanyaan dan Umpan Balik</h2>
             <p>
               Kami menyambut pertanyaan, komentar, dan kekhawatiran Anda tentang privasi atau
               informasi apa pun yang dikumpulkan dari Anda atau tentang Anda. Silakan kirimkan
