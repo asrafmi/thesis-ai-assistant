@@ -95,7 +95,45 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">7. Cookie dan Teknologi Pelacakan</h2>
+            <h2 className="text-lg font-semibold">7. Retensi Data</h2>
+            <p>
+              Kami menyimpan data pribadi Anda selama akun Anda aktif atau selama diperlukan untuk
+              menyediakan layanan. Apabila Anda menghapus akun, kami akan menghapus data pribadi
+              Anda dalam waktu 30 hari sejak permintaan penghapusan, kecuali data yang wajib kami
+              simpan berdasarkan kewajiban hukum yang berlaku (seperti catatan transaksi pembayaran
+              yang mungkin perlu disimpan sesuai peraturan perpajakan Indonesia).
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold">8. Layanan Pihak Ketiga</h2>
+            <p>
+              Kami menggunakan layanan pihak ketiga berikut untuk menjalankan platform SkripsiAI.
+              Masing-masing pihak ketiga memiliki kebijakan privasi tersendiri yang mengatur
+              pemrosesan data mereka:
+            </p>
+            <ul className="list-disc pl-6 space-y-1.5 text-sm text-muted-foreground">
+              <li>
+                <strong>Supabase:</strong> Penyimpanan database, autentikasi pengguna, dan
+                penyimpanan file ekspor.
+              </li>
+              <li>
+                <strong>Anthropic (Claude):</strong> Pemrosesan AI untuk pembuatan konten skripsi.
+                Data yang dikirim meliputi konteks dan instruksi penulisan.
+              </li>
+              <li>
+                <strong>Penyedia Layanan Pembayaran:</strong> Pemrosesan transaksi pembayaran
+                langganan. Data yang dibagikan meliputi informasi yang diperlukan untuk memproses
+                pembayaran Anda.
+              </li>
+              <li>
+                <strong>Vercel:</strong> Hosting dan penyajian aplikasi web.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold">9. Cookie dan Teknologi Pelacakan</h2>
             <p>
               Kami menggunakan cookie yang diperlukan untuk otentikasi dan sesi pengguna. Kami
               tidak menggunakan cookie pelacakan pihak ketiga untuk tujuan periklanan.
@@ -103,7 +141,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">8. Hak Anda</h2>
+            <h2 className="text-lg font-semibold">10. Hak Anda</h2>
             <p>Anda memiliki hak untuk:</p>
             <ul className="list-disc pl-6 space-y-1.5 text-sm text-muted-foreground">
               <li>Mengakses informasi pribadi yang kami simpan tentang Anda.</li>
@@ -114,7 +152,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">9. Perubahan Kebijakan</h2>
+            <h2 className="text-lg font-semibold">11. Perubahan Kebijakan</h2>
             <p>
               Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan akan
               dipublikasikan di halaman ini dengan tanggal pembaruan yang baru. Penggunaan
@@ -124,14 +162,14 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">10. Hukum yang Berlaku</h2>
+            <h2 className="text-lg font-semibold">12. Hukum yang Berlaku</h2>
             <p>
               Kebijakan Privasi ini diatur oleh hukum yang berlaku di Indonesia.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">11. Hubungi Kami</h2>
+            <h2 className="text-lg font-semibold">13. Hubungi Kami</h2>
             <p>
               Kami menyambut pertanyaan, komentar, dan kekhawatiran Anda tentang privasi atau
               informasi apa pun yang dikumpulkan dari Anda atau tentang Anda. Silakan kirimkan
