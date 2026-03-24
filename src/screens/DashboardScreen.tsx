@@ -5,7 +5,7 @@ import { DashboardView } from '@/views/dashboard/DashboardView'
 import { useTheses } from '@/hooks/useThesis'
 import { useProfile } from '@/hooks/useProfile'
 import { useAuth } from '@/hooks/useAuth'
-import { THESIS_LIMIT_FREE, THESIS_LIMIT_STARTER, THESIS_LIMIT_FULL } from '@/lib/limits'
+import { THESIS_LIMIT_FREE, THESIS_LIMIT_STARTER, THESIS_LIMIT_FULL, normalizePlan } from '@/lib/limits'
 
 export function DashboardScreen() {
   const router = useRouter()
@@ -13,7 +13,7 @@ export function DashboardScreen() {
   const { profile } = useProfile()
   const { logout } = useAuth()
 
-  const plan = profile?.plan ?? 'free'
+  const plan = normalizePlan(profile?.plan ?? 'free')
   const thesisLimit = plan === 'full' ? THESIS_LIMIT_FULL
     : plan === 'starter' ? THESIS_LIMIT_STARTER
     : THESIS_LIMIT_FREE

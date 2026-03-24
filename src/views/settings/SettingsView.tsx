@@ -2,20 +2,27 @@
 
 import type { Profile } from '@/types/thesis.types'
 import type { Plan } from '@/lib/limits'
+import type { PaymentRequestStatus } from '@/hooks/useSettings'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { WORD_LIMIT_FREE, STARTER_PLAN_PRICE, FULL_PLAN_PRICE, isPaidPlan } from '@/lib/limits'
-import { Check, Crown, Loader2 } from 'lucide-react'
+import { WORD_LIMIT_FREE, STARTER_PLAN_PRICE, FULL_PLAN_PRICE, isPaidPlan, normalizePlan } from '@/lib/limits'
+import { Check, Crown, Loader2, Clock, XCircle, CheckCircle } from 'lucide-react'
 import { PaymentSuccessModal } from './PaymentSuccessModal'
+import { PaymentForm } from './PaymentForm'
 
 interface SettingsViewProps {
   profile: Profile | null
   isLoading: boolean
-  isUpgrading: boolean
-  paymentStatus: 'success' | 'pending' | 'error' | null
+  isSubmitting: boolean
+  submitError: string | null
+  submitSuccess: boolean
+  paymentRequestStatus: PaymentRequestStatus
+  rejectReason: string | null
   upgradedPlan: Exclude<Plan, 'free'> | null
-  onUpgrade: (targetPlan: Exclude<Plan, 'free'>) => void
-  onPaymentStatusChange: (status: 'success' | 'pending' | 'error' | null) => void
+  selectedPlan: Exclude<Plan, 'free'> | null
+  onOpenPaymentForm: (plan: Exclude<Plan, 'free'>) => void
+  onClosePaymentForm: () => void
+  onSubmitPayment: (plan: Exclude<Plan, 'free'>, file: File) => void
 }
 
 const PLAN_LABELS: Record<Plan, string> = {
@@ -31,8 +38,8 @@ interface PlanCardProps {
   features: string[]
   isCurrent: boolean
   isDowngrade: boolean
-  isUpgrading: boolean
   onUpgrade: () => void
+  disabled: boolean
 }
 
 function formatCurrency(amount: number): string {
@@ -43,7 +50,7 @@ function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
-function PlanCard({ name, price, period, features, isCurrent, isDowngrade, isUpgrading, onUpgrade }: PlanCardProps) {
+function PlanCard({ name, price, period, features, isCurrent, isDowngrade, onUpgrade, disabled }: PlanCardProps) {
   return (
     <div className={`rounded-lg border p-5 ${isCurrent ? 'border-primary/30 bg-primary/5' : 'border-border'}`}>
       <div className='flex items-center justify-between mb-3'>
@@ -63,15 +70,8 @@ function PlanCard({ name, price, period, features, isCurrent, isDowngrade, isUpg
         ))}
       </ul>
       {!isCurrent && !isDowngrade && (
-        <Button className='mt-4 w-full' onClick={onUpgrade} disabled={isUpgrading}>
-          {isUpgrading ? (
-            <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              Memproses...
-            </>
-          ) : (
-            'Upgrade Sekarang'
-          )}
+        <Button className='mt-4 w-full' onClick={onUpgrade} disabled={disabled}>
+          Upgrade Sekarang
         </Button>
       )}
     </div>
@@ -81,11 +81,16 @@ function PlanCard({ name, price, period, features, isCurrent, isDowngrade, isUpg
 export function SettingsView({
   profile,
   isLoading,
-  isUpgrading,
-  paymentStatus,
+  isSubmitting,
+  submitError,
+  submitSuccess,
+  paymentRequestStatus,
+  rejectReason,
   upgradedPlan,
-  onUpgrade,
-  onPaymentStatusChange,
+  selectedPlan,
+  onOpenPaymentForm,
+  onClosePaymentForm,
+  onSubmitPayment,
 }: SettingsViewProps) {
   if (isLoading) {
     return (
@@ -95,9 +100,10 @@ export function SettingsView({
     )
   }
 
-  const currentPlan = profile?.plan ?? 'free'
+  const currentPlan = normalizePlan(profile?.plan ?? 'free')
   const planOrder: Plan[] = ['free', 'starter', 'full']
   const currentPlanIndex = planOrder.indexOf(currentPlan)
+  const hasPendingRequest = paymentRequestStatus === 'pending'
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
@@ -132,11 +138,70 @@ export function SettingsView({
               </span>
             </div>
           )}
+          {isPaidPlan(currentPlan) && profile?.plan_expires_at && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Berlaku hingga</span>
+              <span className="font-medium">
+                {new Date(profile.plan_expires_at).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
+      {/* Payment request status banners */}
+      {paymentRequestStatus === 'pending' && !selectedPlan && (
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+          <Clock className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Pembayaran sedang diverifikasi</p>
+            <p className="mt-1 text-yellow-700">
+              Bukti pembayaran kamu sedang kami periksa. Halaman ini akan otomatis terupdate saat status berubah.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {paymentRequestStatus === 'rejected' && !selectedPlan && (
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <XCircle className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Pembayaran ditolak</p>
+            {rejectReason && <p className="mt-1 text-red-700">Alasan: {rejectReason}</p>}
+            <p className="mt-1 text-red-700">Silakan coba lagi dengan bukti pembayaran yang benar.</p>
+          </div>
+        </div>
+      )}
+
+      {submitSuccess && !selectedPlan && (
+        <div className="mt-4 flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          <CheckCircle className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Bukti pembayaran berhasil dikirim!</p>
+            <p className="mt-1 text-green-700">Kami akan memverifikasi pembayaran kamu secepatnya.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Payment form (shown when user selects a plan) */}
+      {selectedPlan && (
+        <section className="mt-6 rounded-lg border p-6">
+          <PaymentForm
+            targetPlan={selectedPlan}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
+            onSubmit={onSubmitPayment}
+            onBack={onClosePaymentForm}
+          />
+        </section>
+      )}
+
       {/* Plans Section */}
-      {currentPlan !== 'full' && (
+      {currentPlan !== 'full' && !selectedPlan && (
         <section className='mt-6'>
           <div className='flex items-center gap-2 mb-4'>
             <Crown className='h-5 w-5 text-primary' />
@@ -155,8 +220,8 @@ export function SettingsView({
               ]}
               isCurrent={currentPlan === 'starter'}
               isDowngrade={currentPlanIndex > planOrder.indexOf('starter')}
-              isUpgrading={isUpgrading}
-              onUpgrade={() => onUpgrade('starter')}
+              onUpgrade={() => onOpenPaymentForm('starter')}
+              disabled={hasPendingRequest}
             />
             <PlanCard
               name='Full — Semester'
@@ -170,8 +235,8 @@ export function SettingsView({
               ]}
               isCurrent={false}
               isDowngrade={false}
-              isUpgrading={isUpgrading}
-              onUpgrade={() => onUpgrade('full')}
+              onUpgrade={() => onOpenPaymentForm('full')}
+              disabled={hasPendingRequest}
             />
           </div>
         </section>
@@ -179,23 +244,13 @@ export function SettingsView({
 
       {/* Payment Success Modal */}
       <PaymentSuccessModal
-        open={paymentStatus === 'success'}
-        planName={upgradedPlan === 'full' ? 'Full' : upgradedPlan === 'starter' ? 'Starter' : 'Pro'}
-        onOpenChange={(open) => { if (!open) onPaymentStatusChange(null) }}
+        open={paymentRequestStatus === 'approved' && upgradedPlan !== null}
+        planName={upgradedPlan === 'full' ? 'Full' : upgradedPlan === 'starter' ? 'Starter' : ''}
+        onOpenChange={() => {}}
       />
-      {paymentStatus === 'pending' && (
-        <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
-          Pembayaran sedang diproses. Status akan diperbarui otomatis.
-        </div>
-      )}
-      {paymentStatus === 'error' && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          Pembayaran gagal. Silakan coba lagi.
-        </div>
-      )}
 
       {/* Already Full */}
-      {currentPlan === 'full' && (
+      {currentPlan === 'full' && !selectedPlan && (
         <section className="mt-6 rounded-lg border border-green-200 bg-green-50 p-6">
           <div className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-green-600" />

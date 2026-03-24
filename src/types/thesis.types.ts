@@ -13,6 +13,7 @@ export interface Profile {
   plan: Plan
   word_count: number
   word_count_reset_at: string | null
+  plan_expires_at: string | null
 }
 
 export interface Thesis {

@@ -26,7 +26,7 @@ const plans = [
     description: 'Untuk mahasiswa yang mulai serius menulis',
     badge: null,
     cta: 'Daftar & Upgrade',
-    ctaHref: '/register',
+    ctaHref: '/register?plan=starter',
     ctaVariant: 'outline' as const,
     features: [
       'Unlimited kata',
@@ -42,7 +42,7 @@ const plans = [
     description: 'Paket lengkap untuk menyelesaikan skripsi',
     badge: 'Paling Populer',
     cta: 'Daftar & Upgrade',
-    ctaHref: '/register',
+    ctaHref: '/register?plan=full',
     ctaVariant: 'primary' as const,
     features: [
       'Unlimited kata',
