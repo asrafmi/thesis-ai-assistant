@@ -1,6 +1,6 @@
 // PRESENTATION LAYER. pure JSX only. No hooks, no business logic.
 
-import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User } from 'lucide-react';
+import { BookOpen, Sparkles, Save, Eye, Loader2, LogOut, User, Settings, LayoutDashboard } from 'lucide-react';
 import type { SectionTree, Thesis, Profile, Reference, ReferenceStyle } from '@/types/thesis.types';
 import type { UsageData } from '@/lib/limits';
 import { SidebarView } from './SidebarView';
@@ -8,7 +8,7 @@ import { PromptPanelView } from './PromptPanelView';
 import { EditorView } from './EditorView';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ExportPreviewModal } from '@/components/ExportPreviewModal';
-import { UpgradeModal } from '@/components/UpgradeModal';
+import { UpgradeModal, type UpgradeReason } from '@/components/UpgradeModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,8 +51,10 @@ interface WorkspaceViewProps {
   onLogout: () => void;
   usage: UsageData | null;
   isUpgradeOpen: boolean;
-  upgradeReason: 'words' | 'exports';
+  upgradeReason: UpgradeReason;
   onCloseUpgrade: () => void;
+  onSettings: () => void;
+  onDashboard: () => void;
 }
 
 export function WorkspaceView({
@@ -91,6 +93,8 @@ export function WorkspaceView({
   isUpgradeOpen,
   upgradeReason,
   onCloseUpgrade,
+  onSettings,
+  onDashboard,
 }: WorkspaceViewProps) {
   return (
     <div className='flex h-dvh flex-col bg-background text-foreground'>
@@ -160,6 +164,20 @@ export function WorkspaceView({
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-40'>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={onDashboard}
+                className='text-foreground focus:text-foreground cursor-pointer'
+              >
+                <LayoutDashboard size={13} className='mr-2' />
+                Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onSettings}
+                className='text-foreground focus:text-foreground cursor-pointer'
+              >
+                <Settings size={13} className='mr-2' />
+                Settings
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onLogout}
                 className='text-destructive focus:text-destructive cursor-pointer'

@@ -10,9 +10,10 @@ export async function getProfileAction(): Promise<{ data?: Profile; error?: stri
   const auth = await getAuthUser(supabase)
   if ('error' in auth) return auth
 
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- plan_expires_at not in generated types until migration runs
+  const { data, error } = await (supabase as any)
     .from('profiles')
-    .select('id, full_name, nim, plan, word_count, word_count_reset_at')
+    .select('id, full_name, nim, plan, word_count, word_count_reset_at, plan_expires_at')
     .eq('id', auth.userId)
     .single()
 

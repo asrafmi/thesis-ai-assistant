@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   // Block if free plan and over limit
   if (profile.plan === 'free' && currentWordCount >= WORD_LIMIT_FREE) {
-    return new Response('Batas 5.000 kata bulanan tercapai. Upgrade ke Pro untuk melanjutkan.', { status: 429 })
+    return new Response('Batas 3.000 kata bulanan tercapai. Upgrade paket untuk melanjutkan.', { status: 429 })
   }
 
   const params: {

@@ -3,7 +3,7 @@
 // SERVER ACTIONS — Usage tracking for free plan limits. No React hooks, no JSX.
 
 import { createClient, getAuthUser } from '@/lib/supabase/server'
-import { WORD_LIMIT_FREE, EXPORT_LIMIT_FREE } from '@/lib/limits'
+import { WORD_LIMIT_FREE, EXPORT_LIMIT_FREE, EXPORT_LIMIT_STARTER, DIAGRAM_LIMIT_FREE, DIAGRAM_LIMIT_STARTER, normalizePlan } from '@/lib/limits'
 import type { UsageData } from '@/lib/limits'
 
 function isSameMonth(a: Date, b: Date): boolean {
@@ -17,7 +17,7 @@ export async function getUsageAction(): Promise<{ data?: UsageData; error?: stri
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('plan, word_count, word_count_reset_at')
+    .select('plan, word_count, word_count_reset_at, diagram_count, diagram_count_reset_at')
     .eq('id', auth.userId)
     .single()
 
@@ -44,13 +44,34 @@ export async function getUsageAction(): Promise<{ data?: UsageData; error?: stri
     .eq('user_id', auth.userId)
     .gte('created_at', startOfMonth)
 
+  const exportLimit = profile.plan === 'free' ? EXPORT_LIMIT_FREE
+    : profile.plan === 'starter' ? EXPORT_LIMIT_STARTER
+    : Infinity
+
+  // Diagram count with monthly reset
+  const diagramResetAt = profile.diagram_count_reset_at ? new Date(profile.diagram_count_reset_at) : null
+  let diagramCount = profile.diagram_count
+  if (!diagramResetAt || !isSameMonth(diagramResetAt, now)) {
+    diagramCount = 0
+    await supabase
+      .from('profiles')
+      .update({ diagram_count: 0, diagram_count_reset_at: now.toISOString() })
+      .eq('id', auth.userId)
+  }
+
+  const diagramLimit = profile.plan === 'free' ? DIAGRAM_LIMIT_FREE
+    : profile.plan === 'starter' ? DIAGRAM_LIMIT_STARTER
+    : Infinity
+
   return {
     data: {
       wordCount,
       wordLimit: WORD_LIMIT_FREE,
       exportCount: exportCount ?? 0,
-      exportLimit: EXPORT_LIMIT_FREE,
-      plan: profile.plan,
+      exportLimit,
+      diagramCount,
+      diagramLimit,
+      plan: normalizePlan(profile.plan),
     },
   }
 }
